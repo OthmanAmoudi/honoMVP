@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BaseDTO, DTOSchemas } from "../types/dto";
+import { BaseDTO, DTOSchemas } from "./dto";
 
 export function createDTOSchemas<T extends BaseDTO>(
   baseSchema: z.ZodObject<z.ZodRawShape> & z.ZodType<BaseDTO>

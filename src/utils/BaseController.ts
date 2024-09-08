@@ -1,9 +1,9 @@
 // src/controllers/BaseController.ts
 import { Context } from "hono";
-import { BaseService } from "../utils/BaseService";
-import { ValidationError, NotFoundError, DatabaseError } from "../utils/errors";
+import BaseService from "./BaseService";
+import { ValidationError, NotFoundError, DatabaseError } from "./errors";
 
-export abstract class BaseController {
+export default abstract class BaseController {
   constructor(protected service: BaseService) {}
 
   protected handleErrors(c: Context, error: unknown) {
@@ -14,7 +14,7 @@ export abstract class BaseController {
       return c.json({ error: error.message }, 404);
     }
     if (error instanceof DatabaseError) {
-      return c.json({ error: "An unexpected error occurred" }, 500);
+      return c.json({ error: "A database error occurred" }, 500);
     }
     console.error("Unhandled error:", error);
     return c.json({ error: "An unexpected error occurred" }, 500);
@@ -31,7 +31,7 @@ export abstract class BaseController {
 
   getById = async (c: Context) => {
     try {
-      const id = Number(c.req.param("id"));
+      const id = c.req.param("id");
       const item = await this.service.getById(id);
       return c.json(item);
     } catch (error) {
@@ -51,7 +51,7 @@ export abstract class BaseController {
 
   update = async (c: Context) => {
     try {
-      const id = Number(c.req.param("id"));
+      const id = c.req.param("id");
       const data = await c.req.json();
       const updatedItem = await this.service.update(id, data);
       return c.json(updatedItem);
@@ -62,11 +62,42 @@ export abstract class BaseController {
 
   delete = async (c: Context) => {
     try {
-      const id = Number(c.req.param("id"));
+      const id = c.req.param("id");
       await this.service.delete(id);
-      return c.status(204);
+      c.status(204);
+      return c.body(null);
     } catch (error) {
+      console.error(`Error deleting item: ${error}`);
       return this.handleErrors(c, error);
     }
   };
+  // Method to get extra routes
+  getExtraRoutes(): {
+    method: string;
+    path: string;
+    handler: (c: Context) => Promise<any>;
+    middleware?: any;
+  }[] {
+    const proto = Object.getPrototypeOf(this);
+    const extraRoutes = Object.getOwnPropertyNames(proto)
+      .filter(
+        (name) =>
+          ![
+            "constructor",
+            "getAll",
+            "getById",
+            "create",
+            "update",
+            "delete",
+            "getExtraRoutes",
+          ].includes(name)
+      )
+      .map((name) => ({
+        method: "get", // Default to GET
+        path: `/${name}`,
+        handler: (c: Context) => (this as any)[name](c),
+        // TODO: add middleware
+      }));
+    return extraRoutes;
+  }
 }

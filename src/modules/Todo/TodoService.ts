@@ -1,16 +1,16 @@
 // src/services/TodoService.ts
 import { eq } from "drizzle-orm";
-import { BaseService } from "../utils/BaseService";
-import { todosTable } from "../db/models/todoModel";
+import { todosTable } from "../../db/models/todoModel";
 import { z } from "zod";
-import { NotFoundError } from "../utils/errors";
+import { NotFoundError } from "../../utils/errors";
+import BaseService from "../../utils/BaseService";
 
 const todoSchema = z.object({
   content: z.string().min(1),
   completed: z.boolean().optional(),
 });
 
-export class TodoService extends BaseService {
+export default class TodoService extends BaseService {
   async getAll() {
     return this.handleErrors(async () => {
       return await this.db.select().from(todosTable);

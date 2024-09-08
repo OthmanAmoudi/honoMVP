@@ -1,19 +1,15 @@
-// export interface Todo {
-//   id: string;
-//   title: string;
-//   description: string;
-//   completed: boolean;
-//   createdAt: Date;
-//   updatedAt: Date;
-// }
+// src/types/types.ts
+import { MiddlewareHandler } from "hono";
 
-// export interface CreateTodoDTO {
-//   title: string;
-//   description: string;
-// }
+export interface RouteConfig {
+  path: string;
+  controller: new (service: any) => any;
+  middlewares?: ((c: any, next: any) => any) | ((c: any, next: any) => any)[];
+}
 
-// export interface UpdateTodoDTO {
-//   title?: string;
-//   description?: string;
-//   completed?: boolean;
-// }
+export type CustomRoute = {
+  method: "get" | "post" | "put" | "delete" | "patch";
+  path: string;
+  handler: MiddlewareHandler;
+  middlewares?: MiddlewareHandler[];
+};
