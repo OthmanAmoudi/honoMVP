@@ -6,7 +6,7 @@ import { routeConfig } from "./routes/routesConfig";
 
 const app = new Hono();
 // Middleware
-app.use(logger());
+// app.use(logger());
 
 // Routes
 setupRoutes(app, routeConfig);

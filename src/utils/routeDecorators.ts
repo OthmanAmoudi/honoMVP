@@ -1,6 +1,6 @@
-// src/utils/routeDecorator.ts
+import "reflect-metadata";
 
-export function Route(method: string, path: string, middleware?: any) {
+export function Route(method: string, path: string) {
   return function (
     target: any,
     propertyKey: string,
@@ -14,19 +14,134 @@ export function Route(method: string, path: string, middleware?: any) {
       path,
       handler: descriptor.value,
       name: propertyKey,
-      middleware,
     });
   };
 }
 
 // Convenience decorators for common HTTP methods
-export const Get = (path: string, middleware?: any) =>
-  Route("get", path, middleware);
-export const Post = (path: string, middleware?: any) =>
-  Route("post", path, middleware);
-export const Put = (path: string, middleware?: any) =>
-  Route("put", path, middleware);
-export const Delete = (path: string, middleware?: any) =>
-  Route("delete", path, middleware);
-export const Patch = (path: string, middleware?: any) =>
-  Route("patch", path, middleware);
+export function Get(path: string) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    Reflect.defineMetadata(
+      "method",
+      "get",
+      target.constructor.prototype,
+      propertyKey
+    );
+    Reflect.defineMetadata(
+      "path",
+      path,
+      target.constructor.prototype,
+      propertyKey
+    );
+  };
+}
+
+export function Post(path: string) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    Reflect.defineMetadata(
+      "method",
+      "post",
+      target.constructor.prototype,
+      propertyKey
+    );
+    Reflect.defineMetadata(
+      "path",
+      path,
+      target.constructor.prototype,
+      propertyKey
+    );
+  };
+}
+
+export function Put(path: string) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    Reflect.defineMetadata(
+      "method",
+      "put",
+      target.constructor.prototype,
+      propertyKey
+    );
+    Reflect.defineMetadata(
+      "path",
+      path,
+      target.constructor.prototype,
+      propertyKey
+    );
+  };
+}
+
+export function Delete(path: string) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    Reflect.defineMetadata(
+      "method",
+      "delete",
+      target.constructor.prototype,
+      propertyKey
+    );
+    Reflect.defineMetadata(
+      "path",
+      path,
+      target.constructor.prototype,
+      propertyKey
+    );
+  };
+}
+
+export function Patch(path: string) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    Reflect.defineMetadata(
+      "method",
+      "patch",
+      target.constructor.prototype,
+      propertyKey
+    );
+    Reflect.defineMetadata(
+      "path",
+      path,
+      target.constructor.prototype,
+      propertyKey
+    );
+  };
+}
+// Add other HTTP method decorators (Put, Delete, etc.) as needed
+
+export function Use(middleware: any) {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const existingMiddlewares =
+      Reflect.getMetadata(
+        "middlewares",
+        target.constructor.prototype,
+        propertyKey
+      ) || [];
+    Reflect.defineMetadata(
+      "middlewares",
+      [...existingMiddlewares, middleware],
+      target.constructor.prototype,
+      propertyKey
+    );
+  };
+}

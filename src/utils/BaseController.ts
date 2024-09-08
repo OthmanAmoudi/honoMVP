@@ -76,7 +76,7 @@ export default abstract class BaseController {
     method: string;
     path: string;
     handler: (c: Context) => Promise<any>;
-    middleware?: any;
+    middlewares?: any[];
   }[] {
     const proto = Object.getPrototypeOf(this);
     const extraRoutes = Object.getOwnPropertyNames(proto)
@@ -92,12 +92,27 @@ export default abstract class BaseController {
             "getExtraRoutes",
           ].includes(name)
       )
-      .map((name) => ({
-        method: "get", // Default to GET
-        path: `/${name}`,
-        handler: (c: Context) => (this as any)[name](c),
-        // TODO: add middleware
-      }));
+      .map((name) => {
+        const method = Reflect.getMetadata("method", proto, name) || "get";
+        const path = Reflect.getMetadata("path", proto, name);
+        const middlewares =
+          Reflect.getMetadata("middlewares", proto, name) || [];
+
+        if (!path) {
+          console.warn(
+            `No path specified for method ${name}. This route will not be registered.`
+          );
+          return null;
+        }
+
+        return {
+          method,
+          path,
+          handler: (c: Context) => (this as any)[name](c),
+          middlewares,
+        };
+      })
+      .filter((route) => route !== null);
     return extraRoutes;
   }
 }

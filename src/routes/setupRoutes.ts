@@ -1,6 +1,6 @@
 import { Context, Hono } from "hono";
 import { RouteConfig } from "../types/types";
-import path from "path";
+import path from "node:path";
 
 function resolveService(ControllerClass: new (...args: any[]) => any): any {
   const controllerName = ControllerClass.name;
@@ -29,71 +29,25 @@ function resolveService(ControllerClass: new (...args: any[]) => any): any {
   }
 }
 
-// export default function setupRoutes(app: Hono, routesConfig: RouteConfig[]) {
-//   routesConfig.forEach(
-//     ({ path, controller: ControllerClass, middlewares = [] }) => {
-//       const router = new Hono();
-
-//       // Apply middlewares
-//       middlewares.forEach((mw) => router.use(mw));
-
-//       try {
-//         // Resolve the service
-//         const ServiceClass = resolveService(ControllerClass);
-
-//         // Initialize the controller with the corresponding service
-//         const controllerInstance = new ControllerClass(new ServiceClass());
-
-//         // Set up extra routes
-//         const extraRoutes = controllerInstance.getExtraRoutes();
-//         extraRoutes.forEach(
-//           ({
-//             method,
-//             path: routePath,
-//             handler,
-//           }: {
-//             method: string;
-//             path: string;
-//             handler: (c: Context) => Promise<any>;
-//           }) => {
-//             (router as any)[method](routePath, handler);
-//           }
-//         );
-
-//         // Standard RESTful routes
-//         router.get("/", controllerInstance.getAll);
-//         router.get("/:id", controllerInstance.getById);
-//         router.post("/", controllerInstance.create);
-//         router.put("/:id", controllerInstance.update);
-//         router.delete("/:id", controllerInstance.delete);
-
-//         app.route(path, router);
-//       } catch (error) {
-//         console.error(
-//           `Error setting up routes for ${ControllerClass.name}:`,
-//           error
-//         );
-//       }
-//     }
-//   );
-// }
 export default function setupRoutes(app: Hono, routesConfig: RouteConfig[]) {
   routesConfig.forEach(
-    ({ path, controller: ControllerClass, middlewares = [] }) => {
+    ({
+      path,
+      controller: ControllerClass,
+      middlewares = [],
+      standardRoutes = false,
+    }) => {
       const router = new Hono();
 
-      // Apply middlewares
-      if (typeof middlewares === "object") {
+      // Apply global middlewares
+      if (Array.isArray(middlewares)) {
         middlewares.forEach((mw) => router.use(mw));
-      } else {
+      } else if (typeof middlewares === "function") {
         router.use(middlewares);
       }
 
       try {
-        // Resolve the service
         const ServiceClass = resolveService(ControllerClass);
-
-        // Initialize the controller with the corresponding service
         const controllerInstance = new ControllerClass(new ServiceClass());
 
         // Set up extra routes
@@ -103,25 +57,38 @@ export default function setupRoutes(app: Hono, routesConfig: RouteConfig[]) {
             method,
             path: routePath,
             handler,
-            middleware,
+            middlewares: routeMiddlewares = [],
           }: {
             method: string;
             path: string;
             handler: (c: Context) => Promise<any>;
-            middleware?: any;
+            middlewares?: any[];
           }) => {
-            (router as any)[method](routePath, (c: any) =>
-              // TODO: add middleware
-              handler.call(controllerInstance, c)
-            );
+            const routeHandler = (c: Context) =>
+              handler.call(controllerInstance, c);
+            if (
+              Array.isArray(routeMiddlewares) &&
+              routeMiddlewares.length > 0
+            ) {
+              (router as any)[method](
+                routePath,
+                ...routeMiddlewares,
+                routeHandler
+              );
+            } else {
+              (router as any)[method](routePath, routeHandler);
+            }
           }
         );
+
         // Standard RESTful routes
-        router.get("/", controllerInstance.getAll);
-        router.get("/:id", controllerInstance.getById);
-        router.post("/", controllerInstance.create);
-        router.put("/:id", controllerInstance.update);
-        router.delete("/:id", controllerInstance.delete);
+        if (standardRoutes) {
+          router.get("/", controllerInstance.getAll);
+          router.get("/:id", controllerInstance.getById);
+          router.post("/", controllerInstance.create);
+          router.put("/:id", controllerInstance.update);
+          router.delete("/:id", controllerInstance.delete);
+        }
 
         app.route(path, router);
       } catch (error) {

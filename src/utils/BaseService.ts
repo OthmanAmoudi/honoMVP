@@ -24,8 +24,8 @@ export default abstract class BaseService {
   }
 
   abstract getAll(): Promise<any[]>;
-  abstract getById(id: number | string): Promise<any>;
+  abstract getById(id: string): Promise<any>;
   abstract create(data: any): Promise<any>;
-  abstract update(id: number | string, data: any): Promise<any>;
-  abstract delete(id: number | string): Promise<void>;
+  abstract update(id: string, data: any): Promise<any>;
+  abstract delete(id: string): Promise<void>;
 }
