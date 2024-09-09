@@ -1,7 +1,8 @@
 // src/services/BaseService.ts
-import { z } from "zod";
 import { db } from "../db/singletonDBInstance";
-import { ValidationError, NotFoundError, DatabaseError } from "./errors";
+import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
+import { Type, Static, TSchema } from "@sinclair/typebox";
+import { TypeCompiler } from "@sinclair/typebox/compiler";
 
 type ServiceMethod<T> = (...args: any[]) => Promise<T>;
 
@@ -12,14 +13,28 @@ export default abstract class BaseService {
     try {
       return await method();
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        throw new ValidationError("Validation failed", error.errors);
+      if (error instanceof ValidationError) {
+        throw new ValidationError("Validation failed", error);
       }
       if (error instanceof NotFoundError) {
         throw error;
       }
       console.error("Unexpected error:", error);
       throw new DatabaseError("An unexpected database error occurred");
+    }
+  }
+  protected validate<T extends TSchema>(schema: T, obj: unknown): Static<T> {
+    const C = TypeCompiler.Compile(schema);
+    if (C.Check(obj)) {
+      const cleanedObj: Partial<Static<T>> = {};
+      for (const key in schema.properties) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          cleanedObj[key as keyof Static<T>] = obj[key as keyof typeof obj];
+        }
+      }
+      return cleanedObj as Static<T>;
+    } else {
+      throw new ValidationError("Validation failed", C.Errors(obj));
     }
   }
 

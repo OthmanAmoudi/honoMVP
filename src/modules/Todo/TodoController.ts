@@ -1,9 +1,9 @@
 // src/controllers/TodoController.ts
 
 import BaseController from "../../utils/BaseController";
-import TodoService from "./TodoService";
+import { TodoService } from "./TodoService";
 
-export default class TodoController extends BaseController {
+export default class TodoController extends BaseController<TodoService> {
   constructor(todoService: TodoService) {
     super(todoService);
   }

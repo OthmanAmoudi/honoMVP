@@ -1,14 +1,13 @@
 // src/services/NoteService.ts
-import { z } from "zod";
-import { notesTable } from "../../db/models/noteModel";
+import { NewNote, notesTable, UpdateNote } from "../../db/models/noteModel";
 import { NotFoundError } from "../../utils/Errors";
 import { eq } from "drizzle-orm";
 import BaseService from "../../utils/BaseService";
-
-const noteSchema = z.object({
-  description: z.string().min(1),
-});
-
+import {
+  InsertNoteSchema,
+  UpdateNoteSchema,
+  NoteSchema,
+} from "../../db/models/noteModel";
 export default class NoteService extends BaseService {
   async getAll() {
     return this.handleErrors(async () => {
@@ -29,23 +28,23 @@ export default class NoteService extends BaseService {
     });
   }
 
-  async create(data: z.infer<typeof noteSchema>) {
+  async create(data: NewNote) {
     return this.handleErrors(async () => {
-      const validatedData = noteSchema.parse(data);
+      const cleanedData = this.validate(InsertNoteSchema, data);
       const result = await this.db
         .insert(notesTable)
-        .values(validatedData)
+        .values(cleanedData)
         .returning();
       return result[0];
     });
   }
 
-  async update(id: string, data: Partial<z.infer<typeof noteSchema>>) {
+  async update(id: string, data: UpdateNote) {
     return this.handleErrors(async () => {
-      const validatedData = noteSchema.partial().parse(data);
+      this.validate(UpdateNoteSchema, data);
       const result = await this.db
         .update(notesTable)
-        .set(validatedData)
+        .set(data)
         .where(eq(notesTable.id, id))
         .returning();
       if (!result[0]) {

@@ -1,11 +1,29 @@
 // src/controllers/BaseController.ts
 import { Context } from "hono";
 import BaseService from "./BaseService";
-import { ValidationError, NotFoundError, DatabaseError } from "./errors";
+import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
 export default abstract class BaseController<T extends BaseService> {
   constructor(protected service: T) {}
 
-  protected async handleErrors(c: Context, action: () => Promise<any>) {
+  // protected async handleErrors(c: Context, action: () => Promise<any>) {
+  //   try {
+  //     return await action();
+  //   } catch (error) {
+  //     if (error instanceof ValidationError) {
+  //       return c.json({ error: error.message, details: error.details }, 400);
+  //     }
+  //     if (error instanceof NotFoundError) {
+  //       return c.json({ error: error.message }, 404);
+  //     }
+  //     if (error instanceof DatabaseError) {
+  //       return c.json({ error: "A database error occurred" }, 500);
+  //     }
+  //     console.error("Unhandled error:", error);
+  //     return c.json({ error: "An unexpected error occurred" }, 500);
+  //   }
+  // }
+  // Handle responses and convert errors into proper HTTP responses
+  protected async handleResponse(c: Context, action: () => Promise<any>) {
     try {
       return await action();
     } catch (error) {
@@ -22,16 +40,15 @@ export default abstract class BaseController<T extends BaseService> {
       return c.json({ error: "An unexpected error occurred" }, 500);
     }
   }
-
   getAll = async (c: Context) => {
-    return this.handleErrors(c, async () => {
+    return this.handleResponse(c, async () => {
       const items = await this.service.getAll();
       return c.json(items);
     });
   };
 
   getById = async (c: Context) => {
-    return this.handleErrors(c, async () => {
+    return this.handleResponse(c, async () => {
       const id = c.req.param("id");
       const item = await this.service.getById(id);
       return c.json(item);
@@ -39,7 +56,7 @@ export default abstract class BaseController<T extends BaseService> {
   };
 
   create = async (c: Context) => {
-    return this.handleErrors(c, async () => {
+    return this.handleResponse(c, async () => {
       const data = await c.req.json();
       const newItem = await this.service.create(data);
       return c.json(newItem, 201);
@@ -47,7 +64,7 @@ export default abstract class BaseController<T extends BaseService> {
   };
 
   update = async (c: Context) => {
-    return this.handleErrors(c, async () => {
+    return this.handleResponse(c, async () => {
       const id = c.req.param("id");
       const data = await c.req.json();
       const updatedItem = await this.service.update(id, data);
@@ -56,7 +73,7 @@ export default abstract class BaseController<T extends BaseService> {
   };
 
   delete = async (c: Context) => {
-    return this.handleErrors(c, async () => {
+    return this.handleResponse(c, async () => {
       const id = c.req.param("id");
       await this.service.delete(id);
       c.status(204);

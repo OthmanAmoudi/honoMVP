@@ -1,16 +1,13 @@
 import { Context } from "hono";
 import BaseController from "../../utils/BaseController";
 import NoteService from "./NoteService";
-import { Get, Use } from "../../utils/routeDecorators";
+import { Get, Use } from "../../utils/RouteDecorators";
 import { logger } from "hono/logger";
-import TodoService from "../Todo/TodoService";
+import { TodoService } from "../Todo/TodoService";
 
 export default class NoteController extends BaseController<NoteService> {
-  private todoService: TodoService;
-
-  constructor(noteService: NoteService) {
+  constructor(noteService: NoteService, public todoService: TodoService) {
     super(noteService);
-    this.todoService = new TodoService();
   }
 
   @Get("/xxx")
