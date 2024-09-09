@@ -1,12 +1,12 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
-import setupRoutes from "./routes/setupRoutes";
-import { routeConfig } from "./routes/routesConfig";
+import setupRoutes from "./utils/RigesterRoutes";
+import { routeConfig } from "./modules/routes";
 
 const app = new Hono();
 // Middleware
-// app.use(logger());
+app.use(logger());
 
 // Routes
 setupRoutes(app, routeConfig);

@@ -35,7 +35,7 @@ export default function setupRoutes(app: Hono, routesConfig: RouteConfig[]) {
       path,
       controller: ControllerClass,
       middlewares = [],
-      standardRoutes = false,
+      standardRoutes = true,
     }) => {
       const router = new Hono();
 

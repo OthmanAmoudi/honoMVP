@@ -1,7 +1,7 @@
 // src/services/NoteService.ts
 import { z } from "zod";
 import { notesTable } from "../../db/models/noteModel";
-import { NotFoundError } from "../../utils/errors";
+import { NotFoundError } from "../../utils/Errors";
 import { eq } from "drizzle-orm";
 import BaseService from "../../utils/BaseService";
 

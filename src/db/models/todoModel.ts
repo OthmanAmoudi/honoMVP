@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { z } from "zod";
+import { Static, Type } from "@sinclair/typebox";
+import { createInsertSchema, createSelectSchema } from "drizzle-typebox";
 
 export const todosTable = sqliteTable("todos", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -11,22 +11,15 @@ export const todosTable = sqliteTable("todos", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
-
-// Create Zod schema for inserting todos
-export const insertTodoSchema = createInsertSchema(todosTable).omit({
-  id: true,
-  createdAt: true,
+// Create TypeBox schemas for todos
+export const TodoSchema = createSelectSchema(todosTable);
+export const InsertTodoSchema = createInsertSchema(todosTable, {
+  content: Type.String(),
+  completed: Type.Optional(Type.Boolean()),
 });
+export const UpdateTodoSchema = Type.Partial(InsertTodoSchema);
 
-// Create Zod schema for selecting todos
-export const selectTodoSchema = createSelectSchema(todosTable).omit({
-  createdAt: true,
-});
-
-// Types based on the Zod schemas
-export type Todo = z.infer<typeof selectTodoSchema>;
-export type NewTodo = z.infer<typeof insertTodoSchema>;
-
-// Additional schema for update operations
-export const updateTodoSchema = insertTodoSchema.partial();
-export type UpdateTodo = z.infer<typeof updateTodoSchema>;
+// Types based on the TypeBox schemas
+export type Todo = Static<typeof TodoSchema>;
+export type NewTodo = Static<typeof InsertTodoSchema>;
+export type UpdateTodo = Static<typeof UpdateTodoSchema>;
