@@ -24,7 +24,7 @@ export class TodoService extends BaseService {
   async update(id: string, data: Partial<NewTodo>): Promise<Todo> {
     return this.handleErrors(async () => {
       this.validate(UpdateTodoSchema, data);
-
+      console.log("-----");
       const result = await this.db
         .update(todosTable)
         .set(data)

@@ -27,6 +27,8 @@ export default class NoteService extends BaseService {
   async create(data: NewNote) {
     return this.handleErrors(async () => {
       const cleanedData = this.validate(InsertNoteSchema, data);
+      console.log({ cleanedData });
+
       const result = await this.db
         .insert(notesTable)
         .values(cleanedData)
@@ -36,12 +38,13 @@ export default class NoteService extends BaseService {
   }
 
   async update(id: string, data: UpdateNote) {
+    console.log({ data });
     return this.handleErrors(async () => {
-      this.validate(UpdateNoteSchema, data);
+      const cleanedData = this.validate(UpdateNoteSchema, data);
       const result = await this.db
         .update(notesTable)
-        .set(data)
-        .where(eq(notesTable.id, id))
+        .set(cleanedData)
+        .where(eq(notesTable.id, id)) // convert to number if your id is a number e.g Number(id)
         .returning();
       if (!result[0]) {
         throw new NotFoundError(`Note with id ${id} not found`);
