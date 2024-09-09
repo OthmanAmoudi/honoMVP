@@ -3,7 +3,7 @@ import {
   nanoidIdColumn,
   createdAtColumn,
   updatedAtColumn,
-} from "./customefields";
+} from "../../db/customefields";
 import { createSelectSchema, createInsertSchema } from "drizzle-typebox";
 import { Static, Type } from "@sinclair/typebox";
 

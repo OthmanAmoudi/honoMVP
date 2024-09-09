@@ -1,13 +1,9 @@
 // src/services/NoteService.ts
-import { NewNote, notesTable, UpdateNote } from "../../db/models/noteModel";
+import { NewNote, notesTable, UpdateNote } from "./NoteModel";
 import { NotFoundError } from "../../utils/Errors";
 import { eq } from "drizzle-orm";
 import BaseService from "../../utils/BaseService";
-import {
-  InsertNoteSchema,
-  UpdateNoteSchema,
-  NoteSchema,
-} from "../../db/models/noteModel";
+import { InsertNoteSchema, UpdateNoteSchema, NoteSchema } from "./NoteModel";
 export default class NoteService extends BaseService {
   async getAll() {
     return this.handleErrors(async () => {

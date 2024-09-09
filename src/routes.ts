@@ -1,8 +1,8 @@
 // src/routes/routeConfig.ts
 import { logger } from "hono/logger";
-import { RouteConfig } from "../types/types";
-import NoteController from "./Note/NoteController";
-import TodoController from "./Todo/TodoController";
+import { RouteConfig } from "./utils/types";
+import NoteController from "./modules/Note/NoteController";
+import TodoController from "./modules/Todo/TodoController";
 
 // Define an array with routes and associated controllers
 export const routeConfig: RouteConfig[] = [

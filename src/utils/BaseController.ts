@@ -5,24 +5,6 @@ import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
 export default abstract class BaseController<T extends BaseService> {
   constructor(protected service: T) {}
 
-  // protected async handleErrors(c: Context, action: () => Promise<any>) {
-  //   try {
-  //     return await action();
-  //   } catch (error) {
-  //     if (error instanceof ValidationError) {
-  //       return c.json({ error: error.message, details: error.details }, 400);
-  //     }
-  //     if (error instanceof NotFoundError) {
-  //       return c.json({ error: error.message }, 404);
-  //     }
-  //     if (error instanceof DatabaseError) {
-  //       return c.json({ error: "A database error occurred" }, 500);
-  //     }
-  //     console.error("Unhandled error:", error);
-  //     return c.json({ error: "An unexpected error occurred" }, 500);
-  //   }
-  // }
-  // Handle responses and convert errors into proper HTTP responses
   protected async handleResponse(c: Context, action: () => Promise<any>) {
     try {
       return await action();

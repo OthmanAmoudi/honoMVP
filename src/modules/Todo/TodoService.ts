@@ -1,14 +1,9 @@
 // src/services/TodoService.ts
 import { Type } from "@sinclair/typebox";
 import { eq } from "drizzle-orm";
-import { todosTable } from "../../db/models/todoModel";
+import { todosTable } from "./TodoModel";
 import BaseService from "../../utils/BaseService";
-import {
-  InsertTodoSchema,
-  Todo,
-  UpdateTodoSchema,
-  NewTodo,
-} from "../../db/models/todoModel";
+import { InsertTodoSchema, Todo, UpdateTodoSchema, NewTodo } from "./TodoModel";
 import { NotFoundError } from "../../utils/Errors";
 
 // Define the TodoService that extends BaseService
