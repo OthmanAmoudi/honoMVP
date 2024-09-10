@@ -13,7 +13,6 @@ import {
 export class TodoService extends BaseService {
   // Fetch all todos
   async getAll(cursor?: string, limit: number = 3): Promise<Todo[]> {
-    console.log({ cursor, limit });
     return this.handleErrors(async () => {
       const result = await this.db
         .select()

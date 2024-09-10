@@ -46,7 +46,6 @@ export default class NoteService extends BaseService {
   }
 
   async update(id: string, data: UpdateNote) {
-    console.log({ data });
     return this.handleErrors(async () => {
       const cleanedData = this.validate(UpdateNoteSchema, data);
       const result = await this.db

@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-function generateModule(moduleName: string) {
+function generateModule(moduleName) {
   const configPath = path.join(process.cwd(), "drizzle.config.ts");
   const routesPath = path.join(process.cwd(), "src", "routes.ts");
   const modulePath = path.join(process.cwd(), "src", "modules", moduleName);
@@ -51,24 +51,67 @@ import {
 } from "./${moduleName}Model";
 
 export default class ${moduleName}Service extends BaseService {
-  async getAll(cursor?: string, limit: number = 3): Promise<${moduleName}[]> {
-    // Implementation
+  async getAll(cursor?: string, limit: number = 8): Promise<${moduleName}[]> {
+    return this.handleErrors(async () => {
+      const result = await this.db
+        .select()
+        .from(${moduleName.toLowerCase()}Table)
+        .where(cursor ? gt(${moduleName.toLowerCase()}Table.id, cursor) : undefined)
+        .limit(limit)
+        .orderBy(asc(${moduleName.toLowerCase()}Table.id));
+      return result;
+    });
   }
 
   async getById(id: string) {
-    // Implementation
+    return this.handleErrors(async () => {
+      const result = await this.db
+        .select()
+        .from(${moduleName.toLowerCase()}Table)
+        .where(eq(${moduleName.toLowerCase()}Table.id, id));
+      if (!result[0]) {
+        throw new NotFoundError("Resource ${moduleName} with id "+id+" not found");
+      }
+      return result[0];
+    });
   }
 
   async create(data: New${moduleName}) {
-    // Implementation
+    return this.handleErrors(async () => {
+      const cleanedData = this.validate(Insert${moduleName}Schema, data);
+      const result = await this.db
+        .insert(${moduleName.toLowerCase()}Table)
+        .values(cleanedData)
+        .returning();
+      return result[0];
+    });
   }
 
   async update(id: string, data: Update${moduleName}) {
-    // Implementation
+    return this.handleErrors(async () => {
+      const cleanedData = this.validate(Update${moduleName}Schema, data);
+      const result = await this.db
+        .update(${moduleName.toLowerCase()}Table)
+        .set(cleanedData)
+        .where(eq(${moduleName.toLowerCase()}Table.id, id)) // convert to number if your id is a number e.g Number(id)
+        .returning();
+      if (!result[0]) {
+        throw new NotFoundError("Resource ${moduleName} with id "+id+" not found");
+      }
+      return result[0];
+    });
   }
 
   async delete(id: string) {
-    // Implementation
+    return this.handleErrors(async () => {
+      const result = await this.db
+        .delete(${moduleName.toLowerCase()}Table)
+        .where(eq(${moduleName.toLowerCase()}Table.id, id)) // convert to number if your id is a number e.g Number(id)
+        .returning();
+      if (!result[0]) {
+        throw new NotFoundError("Resource ${moduleName} with id "+id+" not found");
+      }
+    });
   }
 }
 `;
@@ -101,7 +144,7 @@ import {
   nanoidIdColumn,
   createdAtColumn,
   updatedAtColumn,
-} from "../../db/customefields";
+} from "../../db/customefields-${dbType}";
 import { createSelectSchema } from "drizzle-typebox";
 import { Static, Type } from "@sinclair/typebox";
 
@@ -113,6 +156,7 @@ export const ${moduleName.toLowerCase()}Table = ${
       : "sqliteTable"
   }("${moduleName.toLowerCase()}", {
   id: nanoidIdColumn(),
+  description: text("description").notNull(),
   // Add other fields as needed
   createdAt: createdAtColumn(),
   updatedAt: updatedAtColumn(),
@@ -120,6 +164,7 @@ export const ${moduleName.toLowerCase()}Table = ${
 
 export const ${moduleName}Schema = createSelectSchema(${moduleName.toLowerCase()}Table);
 export const Insert${moduleName}Schema = Type.Object({
+  description: Type.String({ minLength: 2, maxLength: 50 }),
   // Define insert schema
 });
 export const Update${moduleName}Schema = Insert${moduleName}Schema;
@@ -155,9 +200,11 @@ export type Update${moduleName} = Static<typeof Update${moduleName}Schema>;
 
 // Usage
 const moduleName = process.argv[2];
-if (!moduleName) {
-  console.error("Please provide a module name.");
+if (!moduleName || moduleName.length < 2) {
+  console.error("Please provide a module name with at least 2 characters.");
   process.exit(1);
 }
 
-generateModule(moduleName);
+generateModule(
+  moduleName.slice(0, 1).toUpperCase() + moduleName.slice(1).toLowerCase()
+);

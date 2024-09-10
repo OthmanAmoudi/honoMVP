@@ -5,7 +5,7 @@ import {
   createdAtColumn,
   nanoidIdColumn,
   updatedAtColumn,
-} from "../../db/customefields";
+} from "../../db/customefields-sqlite";
 
 export const todosTable = sqliteTable("todos", {
   id: nanoidIdColumn(),

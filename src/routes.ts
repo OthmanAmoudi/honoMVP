@@ -4,7 +4,6 @@ import { RoutesConfig } from "./utils";
 import NoteController from "./modules/Note/NoteController";
 import TodoController from "./modules/Todo/TodoController";
 
-// Define an array with routes and associated controllers
 const routesConfig: RoutesConfig[] = [
   {
     path: "/todos",
