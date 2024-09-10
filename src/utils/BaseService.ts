@@ -1,16 +1,26 @@
 // src/services/BaseService.ts
+import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { db } from "../db/singletonDBInstance";
 import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
-import { Type, Static, TSchema } from "@sinclair/typebox";
+import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 
 type ServiceMethod<T> = (...args: any[]) => Promise<T>;
 
 export abstract class BaseService {
-  protected db = db;
-
+  protected db!: PostgresJsDatabase; // Use ! to tell TypeScript that it's initialized later
+  constructor() {
+    // Using async IIFE to initialize the db
+    (async () => {
+      this.db = await db(); // Await the resolved database instance
+    })();
+  }
   protected async handleErrors<U>(method: ServiceMethod<U>): Promise<U> {
     try {
+      // Make sure db is initialized before accessing it
+      if (!this.db) {
+        throw new Error("Database is not initialized");
+      }
       return await method();
     } catch (error) {
       if (error instanceof ValidationError) {

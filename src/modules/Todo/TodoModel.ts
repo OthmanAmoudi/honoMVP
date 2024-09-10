@@ -1,16 +1,16 @@
-import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 import { Static, Type } from "@sinclair/typebox";
 import { createSelectSchema } from "drizzle-typebox";
 import {
   createdAtColumn,
   nanoidIdColumn,
   updatedAtColumn,
-} from "../../db/customefields-sqlite";
+} from "../../db/customefields-postgresql";
+import { pgTable, text, boolean } from "drizzle-orm/pg-core";
 
-export const todosTable = sqliteTable("todos", {
+export const todosTable = pgTable("todos", {
   id: nanoidIdColumn(),
   content: text("content").notNull(),
-  completed: integer("completed", { mode: "boolean" }).notNull().default(false),
+  completed: boolean("completed").notNull().default(false),
   createdAt: createdAtColumn(),
   updatedAt: updatedAtColumn(),
 });
