@@ -4,7 +4,7 @@ import {
   createdAtColumn,
   updatedAtColumn,
 } from "../../db/customefields";
-import { createSelectSchema, createInsertSchema } from "drizzle-typebox";
+import { createSelectSchema } from "drizzle-typebox";
 import { Static, Type } from "@sinclair/typebox";
 
 // Example table that extends with common fields

@@ -6,7 +6,7 @@ import { TypeCompiler } from "@sinclair/typebox/compiler";
 
 type ServiceMethod<T> = (...args: any[]) => Promise<T>;
 
-export default abstract class BaseService {
+export abstract class BaseService {
   protected db = db;
 
   protected async handleErrors<U>(method: ServiceMethod<U>): Promise<U> {
@@ -58,7 +58,7 @@ export default abstract class BaseService {
     }
   }
 
-  abstract getAll(): Promise<any[]>;
+  abstract getAll(cursor?: number | string, limit?: number): Promise<any[]>;
   abstract getById(id: string): Promise<any>;
   abstract create(data: any): Promise<any>;
   abstract update(id: string, data: any): Promise<any>;

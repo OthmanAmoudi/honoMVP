@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import BaseController from "../../utils/BaseController";
+import { BaseController } from "../../utils/BaseController";
 import NoteService from "./NoteService";
 import { Get, Use } from "../../utils/RouteDecorators";
 import { logger } from "hono/logger";

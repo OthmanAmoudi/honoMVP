@@ -6,7 +6,7 @@ export type MiddlewareFunction = (
   next: Next
 ) => Promise<void> | void;
 
-export interface RouteConfig {
+export interface RoutesConfig {
   path: string;
   controller: new (service: any) => any;
   middlewares?: ((c: any, next: any) => any) | ((c: any, next: any) => any)[];
