@@ -12,11 +12,11 @@ export const nanoidIdColumn = () =>
 
 // Custom createdAt column for MySQL
 export const createdAtColumn = () =>
-  timestamp("created_at").notNull().defaultNow();
+  timestamp("createdAt").notNull().defaultNow();
 
 // Custom updatedAt column for MySQL
 export const updatedAtColumn = () =>
   timestamp("updatedAt")
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`)
-    .$onUpdate(() => sql`CURRENT_TIMESTAMP`);
+    .defaultNow()
+    .$onUpdate(() => new Date());

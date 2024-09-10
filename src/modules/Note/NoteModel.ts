@@ -1,14 +1,14 @@
-import { text, sqliteTable } from "drizzle-orm/sqlite-core";
 import {
   nanoidIdColumn,
   createdAtColumn,
   updatedAtColumn,
-} from "../../db/customefields-sqlite";
+} from "../../db/customefields-postgresql";
 import { createSelectSchema } from "drizzle-typebox";
 import { Static, Type } from "@sinclair/typebox";
+import { pgTable, text } from "drizzle-orm/pg-core";
 
 // Example table that extends with common fields
-export const notesTable = sqliteTable("notes", {
+export const notesTable = pgTable("notes", {
   id: nanoidIdColumn(),
   description: text("description").notNull(),
   createdAt: createdAtColumn(),
