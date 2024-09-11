@@ -11,8 +11,9 @@ export interface RouteConfig {
   controller: new (service: any) => any;
   middlewares?: ((c: any, next: any) => any) | ((c: any, next: any) => any)[];
   standardRoutes?: boolean;
+  prefix?: string;
+  nestedRoutes?: RouteConfig[];
 }
-
 export type CustomRoute = {
   method: "get" | "post" | "put" | "delete" | "patch";
   path: string;

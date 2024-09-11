@@ -8,8 +8,17 @@ import CourseController from "./modules/Course/CourseController";
 
 const routesConfig: RouteConfig[] = [
   {
+    prefix: "/api",
     path: "/todos",
     controller: TodoController, // this controller by default has all the standard routes (getAll,getById,create,update,delete)
+    nestedRoutes: [
+      {
+        path: "/ooo",
+        controller: NoteController,
+        standardRoutes: true, // if false (getAll,getById,create,update,delete) will not be included
+        middlewares: logger(), // apply middleware for all routes
+      },
+    ],
   },
   {
     path: "/notes",
