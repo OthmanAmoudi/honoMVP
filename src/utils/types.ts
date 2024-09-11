@@ -19,3 +19,5 @@ export type CustomRoute = {
   handler: MiddlewareHandler;
   middlewares?: MiddlewareHandler[];
 };
+
+export type ServiceMethod<T> = (...args: any[]) => Promise<T>;

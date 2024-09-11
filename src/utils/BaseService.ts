@@ -1,11 +1,14 @@
 // src/services/BaseService.ts
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { db } from "../db/singletonDBInstance";
-import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
+import {
+  ValidationError,
+  NotFoundError,
+  DatabaseError,
+  ServiceMethod,
+} from "./";
 import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
-
-type ServiceMethod<T> = (...args: any[]) => Promise<T>;
 
 export abstract class BaseService {
   protected db!: PostgresJsDatabase; // Use ! to tell TypeScript that it's initialized later
@@ -69,8 +72,8 @@ export abstract class BaseService {
   }
 
   abstract getAll(cursor?: number | string, limit?: number): Promise<any[]>;
-  abstract getById(id: string): Promise<any>;
+  abstract getById(id: number | string): Promise<any>;
   abstract create(data: any): Promise<any>;
-  abstract update(id: string, data: any): Promise<any>;
-  abstract delete(id: string): Promise<void>;
+  abstract update(id: number | string, data: any): Promise<any>;
+  abstract delete(id: number | string): Promise<void>;
 }
