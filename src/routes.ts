@@ -1,10 +1,10 @@
 // src/routes.ts
 import { logger } from "hono/logger";
-import { RoutesConfig } from "./utils";
+import { RouteConfig } from "./utils";
 import NoteController from "./modules/Note/NoteController";
 import TodoController from "./modules/Todo/TodoController";
 
-const routesConfig: RoutesConfig[] = [
+const routesConfig: RouteConfig[] = [
   {
     path: "/todos",
     controller: TodoController, // this controller by default has all the standard routes (getAll,getById,create,update,delete)

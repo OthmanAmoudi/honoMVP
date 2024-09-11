@@ -4,10 +4,11 @@ import {
   createdAtColumn,
   nanoidIdColumn,
   updatedAtColumn,
-} from "../../db/customefields-postgresql";
-import { pgTable, text, boolean } from "drizzle-orm/pg-core";
+} from "../../db/customefields-mysql";
 
-export const todosTable = pgTable("todos", {
+import { mysqlTable, text, boolean } from "drizzle-orm/mysql-core";
+
+export const todosTable = mysqlTable("todos", {
   id: nanoidIdColumn(),
   content: text("content").notNull(),
   completed: boolean("completed").notNull().default(false),
