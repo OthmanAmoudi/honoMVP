@@ -251,10 +251,10 @@ export type Update${moduleName} = Static<typeof Update${moduleName}Schema>;
   let routesContent = fs.readFileSync(routesPath, "utf8");
   const importStatement = `import ${moduleName}Controller from "./modules/${moduleName}/${moduleName}Controller";`;
   const newRoute = `
-  {
-    path: "/${moduleName.toLowerCase()}s",
-    controller: ${moduleName}Controller,
-  },`;
+   {
+     path: "/${moduleName.toLowerCase()}s",
+     controller: ${moduleName}Controller,
+   },`;
 
   routesContent = routesContent.replace(
     "const routeConfig: RouteConfig[] = [",
