@@ -93,7 +93,7 @@ export default class ${moduleName}Service extends BaseService {
       const result = await this.db
         .update(${moduleName.toLowerCase()}Table)
         .set(cleanedData)
-        .where(eq(${moduleName.toLowerCase()}Table.id, id)) // convert to number if your id is a number e.g Number(id)
+        .where(eq(${moduleName.toLowerCase()}Table.id, id))
         .returning();
       if (!result[0]) {
         throw new NotFoundError("Resource ${moduleName} with id "+id+" not found");
@@ -106,12 +106,14 @@ export default class ${moduleName}Service extends BaseService {
     return this.handleErrors(async () => {
       const result = await this.db
         .delete(${moduleName.toLowerCase()}Table)
-        .where(eq(${moduleName.toLowerCase()}Table.id, id)) // convert to number if your id is a number e.g Number(id)
+        .where(eq(${moduleName.toLowerCase()}Table.id, id))
         .returning();
       if (!result[0]) {
         throw new NotFoundError("Resource ${moduleName} with id "+id+" not found");
       }
     });
+  }
+  `
   }
 }
 `;
@@ -182,14 +184,14 @@ export type Update${moduleName} = Static<typeof Update${moduleName}Schema>;
   let routesContent = fs.readFileSync(routesPath, "utf8");
   const importStatement = `import ${moduleName}Controller from "./modules/${moduleName}/${moduleName}Controller";`;
   const newRoute = `
-  {
-    path: "/${moduleName.toLowerCase()}s",
-    controller: ${moduleName}Controller,
-  },`;
+   {
+     path: "/${moduleName.toLowerCase()}s",
+     controller: ${moduleName}Controller,
+   },`;
 
   routesContent = routesContent.replace(
-    "const routesConfig: RoutesConfig[] = [",
-    `import ${moduleName}Controller from "./modules/${moduleName}/${moduleName}Controller";\n\nconst routesConfig: RoutesConfig[] = [`
+    "const routeConfig: RouteConfig[] = [",
+    `import ${moduleName}Controller from "./modules/${moduleName}/${moduleName}Controller";\n\nconst routeConfig: RouteConfig[] = [`
   );
   routesContent = routesContent.replace("];", `${newRoute}\n];`);
 

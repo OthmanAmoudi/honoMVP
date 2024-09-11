@@ -42,11 +42,11 @@ export abstract class BaseService {
       for (const error of C.Errors(cleanedObj)) {
         const { path, message, value } = error;
         errors.push(
-          `❌ Validation Error` +
+          `Validation Error` +
             ` At: ${
               Array.isArray(path) ? path.join(".") : path || "(root)"
             }\n` +
-            ` ⚠️  Issue: ${message}` +
+            ` Issue: ${message}` +
             ` got: (${value})`
         );
       }
@@ -59,8 +59,8 @@ export abstract class BaseService {
   }
 
   abstract getAll(cursor?: number | string, limit?: number): Promise<any[]>;
-  abstract getById(id: string): Promise<any>;
+  abstract getById(id: number | string): Promise<any>;
   abstract create(data: any): Promise<any>;
-  abstract update(id: string, data: any): Promise<any>;
-  abstract delete(id: string): Promise<void>;
+  abstract update(id: number | string, data: any): Promise<any>;
+  abstract delete(id: number | string): Promise<void>;
 }
