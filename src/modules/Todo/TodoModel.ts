@@ -1,16 +1,17 @@
-import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 import { Static, Type } from "@sinclair/typebox";
 import { createSelectSchema } from "drizzle-typebox";
 import {
   createdAtColumn,
   nanoidIdColumn,
   updatedAtColumn,
-} from "../../db/customefields-sqlite";
+} from "../../db/customefields-mysql";
 
-export const todosTable = sqliteTable("todos", {
+import { mysqlTable, text, boolean } from "drizzle-orm/mysql-core";
+
+export const todosTable = mysqlTable("todos", {
   id: nanoidIdColumn(),
   content: text("content").notNull(),
-  completed: integer("completed", { mode: "boolean" }).notNull().default(false),
+  completed: boolean("completed").notNull().default(false),
   createdAt: createdAtColumn(),
   updatedAt: updatedAtColumn(),
 });

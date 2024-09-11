@@ -1,16 +1,29 @@
 // src/services/BaseService.ts
+import { MySql2Database } from "drizzle-orm/mysql2";
 import { db } from "../db/singletonDBInstance";
-import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
-import { Type, Static, TSchema } from "@sinclair/typebox";
+import {
+  ValidationError,
+  NotFoundError,
+  DatabaseError,
+  ServiceMethod,
+} from "./";
+import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 
-type ServiceMethod<T> = (...args: any[]) => Promise<T>;
-
 export abstract class BaseService {
-  protected db = db;
-
+  protected db!: MySql2Database; // Use ! to tell TypeScript that it's initialized later
+  constructor() {
+    // Using async IIFE to initialize the db
+    (async () => {
+      this.db = await db(); // Await the resolved database instance
+    })();
+  }
   protected async handleErrors<U>(method: ServiceMethod<U>): Promise<U> {
     try {
+      // Make sure db is initialized before accessing it
+      if (!this.db) {
+        throw new Error("Database is not initialized");
+      }
       return await method();
     } catch (error) {
       if (error instanceof ValidationError) {
@@ -42,11 +55,11 @@ export abstract class BaseService {
       for (const error of C.Errors(cleanedObj)) {
         const { path, message, value } = error;
         errors.push(
-          `❌ Validation Error` +
+          `Validation Error` +
             ` At: ${
               Array.isArray(path) ? path.join(".") : path || "(root)"
             }\n` +
-            ` ⚠️  Issue: ${message}` +
+            ` Issue: ${message}` +
             ` got: (${value})`
         );
       }
@@ -59,8 +72,8 @@ export abstract class BaseService {
   }
 
   abstract getAll(cursor?: number | string, limit?: number): Promise<any[]>;
-  abstract getById(id: string): Promise<any>;
+  abstract getById(id: number | string): Promise<any>;
   abstract create(data: any): Promise<any>;
-  abstract update(id: string, data: any): Promise<any>;
-  abstract delete(id: string): Promise<void>;
+  abstract update(id: number | string, data: any): Promise<any>;
+  abstract delete(id: number | string): Promise<void>;
 }
