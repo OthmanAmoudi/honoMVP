@@ -50,7 +50,7 @@ export default class NoteService extends BaseService {
       const cleanedData = this.validate(UpdateNoteSchema, data);
       const result = await this.db
         .update(notesTable)
-        .set({ description: "test test" })
+        .set(cleanedData)
         .where(eq(notesTable.id, id)) // convert to number if your id is a number e.g Number(id)
         .returning();
       if (!result[0]) {

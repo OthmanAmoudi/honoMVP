@@ -1,11 +1,14 @@
 // src/services/BaseService.ts
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { db } from "../db/singletonDBInstance";
-import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
+import {
+  ValidationError,
+  NotFoundError,
+  DatabaseError,
+  ServiceMethod,
+} from "./";
 import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
-
-type ServiceMethod<T> = (...args: any[]) => Promise<T>;
 
 export abstract class BaseService {
   protected db!: PostgresJsDatabase; // Use ! to tell TypeScript that it's initialized later
