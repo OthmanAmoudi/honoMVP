@@ -37,7 +37,12 @@
       },
       "indexes": {},
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "todos_id": {
+          "name": "todos_id",
+          "columns": ["id"]
+        }
+      },
       "uniqueConstraints": {}
     }
   },

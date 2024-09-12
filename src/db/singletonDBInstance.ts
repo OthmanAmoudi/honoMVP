@@ -36,5 +36,4 @@ class DatabaseSingleton {
     return DatabaseSingleton.instance;
   }
 }
-
 export const db = () => DatabaseSingleton.getInstance();
