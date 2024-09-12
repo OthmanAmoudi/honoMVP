@@ -1,5 +1,5 @@
 import { Context, Hono } from "hono";
-import { RouteConfig } from "./Types";
+import { RouteConfig } from "./";
 import path from "node:path";
 
 function resolveService(ControllerClass: new (...args: any[]) => any): any {
