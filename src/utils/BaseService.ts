@@ -1,5 +1,9 @@
 // src/services/BaseService.ts
+<<<<<<< HEAD
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+=======
+import { MySql2Database } from "drizzle-orm/mysql2";
+>>>>>>> b57ab5ca2d1cc3cc034511c5ffa0d11bc127e89e
 import { db } from "../db/singletonDBInstance";
 import {
   ValidationError,

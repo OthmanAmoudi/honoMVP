@@ -51,6 +51,73 @@ import {
 } from "./${moduleName}Model";
 
 export default class ${moduleName}Service extends BaseService {
+  ${
+    dbType === "mysql"
+      ? `
+  async getAll(cursor?: string, limit: number = 3): Promise<${moduleName}[]> {
+    return this.handleErrors(async () => {
+      const result = await this.db
+        .select()
+        .from(${moduleName.toLowerCase()}Table)
+        .where(cursor ? gt(${moduleName.toLowerCase()}Table.id, cursor) : undefined)
+        .limit(limit)
+        .orderBy(asc(${moduleName.toLowerCase()}Table.id));
+      return result;
+    });
+  }
+
+  async getById(id: string): Promise<${moduleName}> {
+    return this.handleErrors(async () => {
+      const result = await this.db
+        .select()
+        .from(${moduleName.toLowerCase()}Table)
+        .where(eq(${moduleName.toLowerCase()}Table.id, id));
+
+      if (!result.length)
+        throw new NotFoundError(\`Resource ${moduleName} with id \${id} not found\`);
+      return result[0];
+    });
+  }
+
+  async create(data: New${moduleName}): Promise<${moduleName}> {
+    return this.handleErrors(async () => {
+      const cleanedData = this.validate(Insert${moduleName}Schema, data);
+      const createdId = await this.db
+        .insert(${moduleName.toLowerCase()}Table)
+        .values(cleanedData)
+        .$returningId();
+      const result = await this.getById(createdId[0].id);
+      return result;
+    });
+  }
+
+  async update(id: string, data: Partial<New${moduleName}>): Promise<${moduleName}> {
+    return this.handleErrors(async () => {
+      const cleanedData = this.validate(Update${moduleName}Schema, data);
+      const updatedId = await this.db
+        .update(${moduleName.toLowerCase()}Table)
+        .set(cleanedData)
+        .where(eq(${moduleName.toLowerCase()}Table.id, id));
+      if (!updatedId[0].affectedRows) {
+        throw new NotFoundError(\`Resource ${moduleName} with id \${id} not found\`);
+      }
+      const result = await this.getById(id);
+      return result;
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    return this.handleErrors(async () => {
+      const result = await this.db
+        .delete(${moduleName.toLowerCase()}Table)
+        .where(eq(${moduleName.toLowerCase()}Table.id, id));
+      if (!result[0].affectedRows) {
+        throw new NotFoundError(\`Resource ${moduleName} with id \${id} not found\`);
+      }
+    });
+  }
+  `
+      : `
   async getAll(cursor?: string, limit: number = 8): Promise<${moduleName}[]> {
     return this.handleErrors(async () => {
       const result = await this.db
