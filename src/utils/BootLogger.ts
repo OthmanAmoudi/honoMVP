@@ -1,5 +1,5 @@
 import { Table } from "console-table-printer";
-import { RouteInfo } from "./Types";
+import { RouteInfo } from "./";
 
 export function printBootInfo(routes: RouteInfo[]) {
   console.log("\n=== Application Boot Information ===\n");

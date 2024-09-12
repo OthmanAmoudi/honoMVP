@@ -11,12 +11,14 @@ export abstract class BaseController<T extends BaseService = BaseService> {
   }
   protected async handleResponse(c: Context, action: () => Promise<any>) {
     try {
+      console.log("ccc");
       return await action();
     } catch (error) {
       if (error instanceof ValidationError) {
         return c.json({ error: error.message, details: error.details }, 400);
       }
       if (error instanceof NotFoundError) {
+        console.log("eeeeeeeee");
         return c.json({ error: error.message }, 404);
       }
       if (error instanceof DatabaseError) {

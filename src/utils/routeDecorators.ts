@@ -1,23 +1,5 @@
 import "reflect-metadata";
 
-export function Route(method: string, path: string) {
-  return function (
-    target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-  ) {
-    if (!target.extraRoutes) {
-      target.extraRoutes = [];
-    }
-    target.extraRoutes.push({
-      method: method.toLowerCase(),
-      path,
-      handler: descriptor.value,
-      name: propertyKey,
-    });
-  };
-}
-
 // Convenience decorators for common HTTP methods
 export function Get(path: string) {
   return function (

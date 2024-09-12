@@ -24,12 +24,14 @@ export abstract class BaseService {
       if (!this.db) {
         throw new Error("Database is not initialized");
       }
+      console.log("ttt");
       return await method();
     } catch (error) {
       if (error instanceof ValidationError) {
         throw new ValidationError("Validation failed", error);
       }
       if (error instanceof NotFoundError) {
+        console.log("aaa");
         throw error;
       }
       console.error("Unexpected error:", error);
