@@ -1,8 +1,11 @@
+//src/utils/RegisterRoutes.ts
 import { Context, Hono } from "hono";
-import { RouteConfig } from "./";
+import { RouteConfig, RouteInfo } from "./";
 import path from "node:path";
 
-function resolveService(ControllerClass: new (...args: any[]) => any): any {
+function resolveService(
+  ControllerClass: new (...args: any[]) => any
+): any | null {
   const controllerName = ControllerClass.name;
   const moduleName = controllerName.replace("Controller", "");
   const serviceName = `${moduleName}Service`;
@@ -19,17 +22,25 @@ function resolveService(ControllerClass: new (...args: any[]) => any): any {
     const ServiceClass = ServiceModule.default || ServiceModule[serviceName];
 
     if (!ServiceClass) {
-      throw new Error(`Service class not found in module: ${servicePath}`);
+      console.warn(
+        `Service class not found for ${controllerName}. Continuing without service.`
+      );
+      return null;
     }
 
     return ServiceClass;
   } catch (error) {
-    console.error(`Error resolving service for ${controllerName}:`, error);
-    throw new Error(`Service not found for controller: ${controllerName}`);
+    console.warn(`Error resolving service for ${controllerName}.`);
+    console.warn(`Continuing without service for ${controllerName}.`);
+    return null;
   }
 }
-export default function setupRoutes(app: Hono, routesConfig: RouteConfig[]) {
+export default function setupRoutes(
+  app: Hono,
+  routesConfig: RouteConfig[]
+): RouteInfo[] {
   const globalPrefix = routesConfig.find((route) => route.prefix)?.prefix || "";
+  const bootInfo: RouteInfo[] = [];
 
   function setupRoute(
     router: Hono,
@@ -48,15 +59,22 @@ export default function setupRoutes(app: Hono, routesConfig: RouteConfig[]) {
 
     try {
       const ServiceClass = resolveService(ControllerClass);
-      const controllerInstance = new ControllerClass(new ServiceClass());
+      const controllerInstance = ServiceClass
+        ? new ControllerClass(new ServiceClass())
+        : new ControllerClass();
 
       const routeRouter = new Hono();
 
       // Apply middlewares
+      const appliedMiddlewares: string[] = [];
       if (Array.isArray(middlewares)) {
-        middlewares.forEach((mw) => routeRouter.use("*", mw));
+        middlewares.forEach((mw) => {
+          routeRouter.use("*", mw);
+          appliedMiddlewares.push(mw.name || "anonymous");
+        });
       } else if (typeof middlewares === "function") {
         routeRouter.use("*", middlewares);
+        appliedMiddlewares.push(middlewares.name || "anonymous");
       }
 
       // Set up extra routes
@@ -84,29 +102,41 @@ export default function setupRoutes(app: Hono, routesConfig: RouteConfig[]) {
           } else {
             (routeRouter as any)[method](extraPath, routeHandler);
           }
+          bootInfo.push({
+            path: `${globalPrefix}${fullPath}${extraPath}`,
+            controller: ControllerClass.name,
+            service: ServiceClass ? ServiceClass.name : null,
+            middlewares: [
+              ...appliedMiddlewares,
+              ...routeMiddlewares.map((mw) => mw.name || "anonymous"),
+            ],
+            methods: [method.toUpperCase()],
+          });
         }
       );
 
       // Standard RESTful routes
       if (standardRoutes) {
-        routeRouter.get("/", controllerInstance.getAll);
-        routeRouter.post("/", controllerInstance.create);
-
-        // Set up nested routes before the /:id route
-        nestedRoutes.forEach((nestedRoute) => {
-          setupRoute(routeRouter, nestedRoute);
+        const standardRouteMethods = ["GET", "POST", "GET", "PUT", "DELETE"];
+        bootInfo.push({
+          path: globalPrefix + fullPath,
+          controller: ControllerClass.name,
+          service: ServiceClass ? ServiceClass.name : null,
+          middlewares: appliedMiddlewares,
+          methods: standardRouteMethods,
         });
 
-        // Add /:id routes after nested routes
+        routeRouter.get("/", controllerInstance.getAll);
+        routeRouter.post("/", controllerInstance.create);
         routeRouter.get("/:id", controllerInstance.getById);
         routeRouter.put("/:id", controllerInstance.update);
         routeRouter.delete("/:id", controllerInstance.delete);
-      } else {
-        // If standardRoutes is false, set up nested routes at the end
-        nestedRoutes.forEach((nestedRoute) => {
-          setupRoute(routeRouter, nestedRoute);
-        });
       }
+
+      // Set up nested routes
+      nestedRoutes.forEach((nestedRoute) => {
+        setupRoute(routeRouter, nestedRoute, fullPath);
+      });
 
       // Mount the route router
       router.route(fullPath, routeRouter);
@@ -121,4 +151,6 @@ export default function setupRoutes(app: Hono, routesConfig: RouteConfig[]) {
   const mainRouter = new Hono();
   routesConfig.forEach((config) => setupRoute(mainRouter, config));
   app.route(globalPrefix, mainRouter);
+
+  return bootInfo;
 }

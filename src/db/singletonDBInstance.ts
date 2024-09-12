@@ -23,8 +23,7 @@ class DatabaseSingleton {
           await pgClient`SELECT 1`;
           const db = drizzle(pgClient);
           console.log(
-            "Database connected successfully",
-            process.env.PG_DATABASE
+            `PG Database '${process.env.PG_DATABASE}' connected successfully`
           );
           return db;
         } catch (error) {

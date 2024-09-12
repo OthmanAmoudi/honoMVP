@@ -3,6 +3,7 @@ import { logger } from "hono/logger";
 import { RouteConfig } from "./utils";
 import NoteController from "./modules/Note/NoteController";
 import TodoController from "./modules/Todo/TodoController";
+import GeneralController from "./modules/General/GeneralController";
 
 const routeConfig: RouteConfig[] = [
   {
@@ -18,8 +19,8 @@ const routeConfig: RouteConfig[] = [
     nestedRoutes: [
       {
         path: "/ooo",
-        controller: NoteController,
-        standardRoutes: false,
+        controller: GeneralController,
+        // standardRoutes: false,
         middlewares: logger(),
       },
     ],

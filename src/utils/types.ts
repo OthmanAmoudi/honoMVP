@@ -8,7 +8,7 @@ export type MiddlewareFunction = (
 
 export interface RouteConfig {
   path: string;
-  controller: new (service: any) => any;
+  controller: new (service?: any) => any;
   middlewares?: ((c: any, next: any) => any) | ((c: any, next: any) => any)[];
   standardRoutes?: boolean;
   prefix?: string;
@@ -22,3 +22,10 @@ export type CustomRoute = {
 };
 
 export type ServiceMethod<T> = (...args: any[]) => Promise<T>;
+export interface RouteInfo {
+  path: string;
+  controller: string;
+  service: string | null;
+  middlewares: string[];
+  methods: string[];
+}
