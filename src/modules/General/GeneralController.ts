@@ -2,6 +2,7 @@ import { Context } from "hono";
 import { BaseController } from "../../utils/BaseController";
 import { Get, Use } from "../../utils/RouteDecorators";
 import { logger } from "hono/logger";
+import { loggingMiddleware } from "../../middlewares/AuthMiddleware";
 
 export default class GeneralController extends BaseController {
   constructor() {
@@ -9,7 +10,7 @@ export default class GeneralController extends BaseController {
   }
 
   @Get("/general")
-  @Use(logger())
+  @Use([logger(), loggingMiddleware])
   async getAllNotes(c: Context) {
     console.log("first");
     return c.json({

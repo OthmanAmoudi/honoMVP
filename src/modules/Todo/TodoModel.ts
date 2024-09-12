@@ -4,7 +4,7 @@ import {
   createdAtColumn,
   nanoidIdColumn,
   updatedAtColumn,
-} from "../../db/customefields-postgresql";
+} from "../../db/fields/customefields-postgresql";
 import { pgTable, text, boolean } from "drizzle-orm/pg-core";
 
 export const todosTable = pgTable("todos", {

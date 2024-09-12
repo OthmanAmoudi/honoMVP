@@ -1,7 +1,8 @@
 //src/utils/RegisterRoutes.ts
-import { Context, Hono } from "hono";
+import { Context, Hono, MiddlewareHandler } from "hono";
 import { RouteConfig, RouteInfo } from "./";
 import path from "node:path";
+import { printBootInfo } from "./BootLogger";
 
 function resolveService(
   ControllerClass: new (...args: any[]) => any
@@ -30,16 +31,37 @@ function resolveService(
 
     return ServiceClass;
   } catch (error) {
-    console.warn(`Error resolving service for ${controllerName}.`);
+    // console.warn(`Error resolving service for ${controllerName}.`);
     console.warn(`Continuing without service for ${controllerName}.`);
     return null;
   }
 }
+
+function getAdditionalServices(controllerInstance: any): string[] {
+  return Object.entries(controllerInstance)
+    .filter(
+      ([key, value]) =>
+        key.toLowerCase().includes("service") && typeof value === "object"
+    )
+    .map(([key]) => key);
+}
+
+function getFuncName(func: Function | object): string {
+  if (Array.isArray(func)) {
+    return func.map((f) => getFuncName(f)).join(", ");
+  }
+  if (typeof func === "function" && func.name) return func.name;
+  if (typeof func === "object" && func.constructor && func.constructor.name)
+    return func.constructor.name;
+  return "middleware";
+}
+
 export default function setupRoutes(
   app: Hono,
-  routesConfig: RouteConfig[]
+  routesConfig: RouteConfig[],
+  prefix: { prefix: string }
 ): RouteInfo[] {
-  const globalPrefix = routesConfig.find((route) => route.prefix)?.prefix || "";
+  const globalPrefix = prefix.prefix;
   const bootInfo: RouteInfo[] = [];
 
   function setupRoute(
@@ -70,14 +92,16 @@ export default function setupRoutes(
       if (Array.isArray(middlewares)) {
         middlewares.forEach((mw) => {
           routeRouter.use("*", mw);
-          appliedMiddlewares.push(mw.name || "anonymous");
+          appliedMiddlewares.push(getFuncName(mw));
         });
       } else if (typeof middlewares === "function") {
         routeRouter.use("*", middlewares);
-        appliedMiddlewares.push(middlewares.name || "anonymous");
+        appliedMiddlewares.push(getFuncName(middlewares));
       }
 
-      // Set up extra routes
+      const additionalServices = getAdditionalServices(
+        controllerInstance
+      ).filter((service) => service !== "service"); // Set up extra routes
       const extraRoutes = controllerInstance.getExtraRoutes();
       extraRoutes.forEach(
         ({
@@ -89,7 +113,7 @@ export default function setupRoutes(
           method: string;
           path: string;
           handler: (c: Context) => Promise<any>;
-          middlewares?: any[];
+          middlewares?: MiddlewareHandler[];
         }) => {
           const routeHandler = (c: Context) =>
             handler.call(controllerInstance, c);
@@ -105,10 +129,13 @@ export default function setupRoutes(
           bootInfo.push({
             path: `${globalPrefix}${fullPath}${extraPath}`,
             controller: ControllerClass.name,
-            service: ServiceClass ? ServiceClass.name : null,
+            services: [
+              ServiceClass ? ServiceClass.name : null,
+              ...additionalServices,
+            ].filter(Boolean),
             middlewares: [
               ...appliedMiddlewares,
-              ...routeMiddlewares.map((mw) => mw.name || "anonymous"),
+              ...routeMiddlewares.map((mw) => getFuncName(mw)),
             ],
             methods: [method.toUpperCase()],
           });
@@ -121,7 +148,10 @@ export default function setupRoutes(
         bootInfo.push({
           path: globalPrefix + fullPath,
           controller: ControllerClass.name,
-          service: ServiceClass ? ServiceClass.name : null,
+          services: [
+            ServiceClass ? ServiceClass.name : null,
+            ...additionalServices,
+          ].filter(Boolean),
           middlewares: appliedMiddlewares,
           methods: standardRouteMethods,
         });
@@ -151,6 +181,6 @@ export default function setupRoutes(
   const mainRouter = new Hono();
   routesConfig.forEach((config) => setupRoute(mainRouter, config));
   app.route(globalPrefix, mainRouter);
-
+  printBootInfo(bootInfo);
   return bootInfo;
 }

@@ -2,7 +2,7 @@ import {
   nanoidIdColumn,
   createdAtColumn,
   updatedAtColumn,
-} from "../../db/customefields-postgresql";
+} from "../../db/fields/customefields-postgresql";
 import { createSelectSchema } from "drizzle-typebox";
 import { Static, Type } from "@sinclair/typebox";
 import { pgTable, text } from "drizzle-orm/pg-core";

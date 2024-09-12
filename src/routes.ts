@@ -7,7 +7,6 @@ import GeneralController from "./modules/General/GeneralController";
 
 const routeConfig: RouteConfig[] = [
   {
-    prefix: "/api", // this is the prefix for all routes
     path: "/todos",
     controller: TodoController, // this controller by default has all the standard routes (getAll,getById,create,update,delete)
   },
@@ -15,13 +14,13 @@ const routeConfig: RouteConfig[] = [
     path: "/notes",
     controller: NoteController,
     standardRoutes: true, // if false (getAll,getById,create,update,delete) will not be included
-    middlewares: logger(), // apply middleware for all routes
+    // middlewares: logger(), // apply middleware for all routes
     nestedRoutes: [
       {
         path: "/ooo",
         controller: GeneralController,
         // standardRoutes: false,
-        middlewares: logger(),
+        // middlewares: logger(),
       },
     ],
   },
