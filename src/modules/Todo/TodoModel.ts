@@ -16,6 +16,8 @@ export const todosTable = pgTable("todos", {
 });
 // Create TypeBox schemas for todos
 export const TodoSchema = createSelectSchema(todosTable);
+// for post request: only content is required, completed is optional, extra fields are ignored
+// for put request: all fields are optional, but if provided, they must match the schema
 export const InsertTodoSchema = Type.Object({
   content: Type.String(),
   completed: Type.Optional(Type.Boolean()),
