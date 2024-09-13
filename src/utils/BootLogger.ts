@@ -6,21 +6,24 @@ export function printBootInfo(routes: RouteInfo[]) {
 
   const table = new Table({
     columns: [
+      { name: "method", alignment: "left", color: "blue" },
       { name: "path", alignment: "left", color: "cyan" },
+      { name: "handler", alignment: "left", color: "lime" },
       { name: "controller", alignment: "left", color: "green" },
       { name: "services", alignment: "left", color: "yellow" },
       { name: "middlewares", alignment: "left", color: "magenta" },
-      { name: "methods", alignment: "left", color: "blue" },
     ],
   });
 
   routes.forEach((route) => {
     table.addRow({
+      method: route.methods,
       path: route.path,
+      handler: route.handler,
       controller: route.controller,
       services: route.services.join(", ") || "N/A",
       middlewares: route.middlewares.join(", ") || "N/A",
-      methods: route.methods.join(", "),
+      // methods: route.methods.join(", "),
     });
   });
 

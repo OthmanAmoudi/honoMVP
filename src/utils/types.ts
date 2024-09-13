@@ -29,4 +29,5 @@ export interface RouteInfo {
   services: string[];
   middlewares: string[];
   methods: string[];
+  handler: string;
 }

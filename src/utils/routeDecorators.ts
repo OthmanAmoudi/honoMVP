@@ -7,6 +7,7 @@ export function Get(path: string) {
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
+    if (path === "/") path = "";
     Reflect.defineMetadata(
       "method",
       "get",

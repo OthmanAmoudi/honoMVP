@@ -1,17 +1,15 @@
-//src/modules/General/GeneralController.ts
+// GeneralController.ts
 import { Context } from "hono";
 import { BaseController } from "../../utils/BaseController";
 import { Get, Use } from "../../utils/RouteDecorators";
 import { logger } from "hono/logger";
 import { loggingMiddleware } from "../../middlewares/AuthMiddleware";
-import NoteService from "./GeneralService";
 
 export default class GeneralController extends BaseController {
   constructor() {
     super();
   }
 
-  //   @Use([logger(), loggingMiddleware])
   @Get("/")
   async fff(c: Context) {
     console.log("General controller reached");
@@ -23,7 +21,19 @@ export default class GeneralController extends BaseController {
       ],
     });
   }
-  @Get("/general")
+  @Get("/vvv")
+  async vvv(c: Context) {
+    console.log("General controller reached");
+    return c.json({
+      notes: [
+        { id: 1, content: "vvv 1" },
+        { id: 2, content: "vvv 2" },
+        { id: 3, content: "vvv 3" },
+      ],
+    });
+  }
+
+  @Get("general")
   @Use(loggingMiddleware)
   @Use(logger())
   async xxx(c: Context) {
@@ -37,7 +47,7 @@ export default class GeneralController extends BaseController {
     });
   }
 
-  @Get("/general2")
+  @Get("general2")
   async bbb(c: Context) {
     return c.json({
       todos: [

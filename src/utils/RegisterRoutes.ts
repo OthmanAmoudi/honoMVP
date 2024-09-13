@@ -1,69 +1,64 @@
-import { Context, Hono, MiddlewareHandler } from "hono";
-import { RouteConfig, RouteInfo } from "./";
+// src/utils/RegisterRoutes.ts
+import { Hono, Context, MiddlewareHandler } from "hono";
 import path from "node:path";
+import { RouteConfig, RouteInfo } from "./types";
 import { printBootInfo } from "./BootLogger";
 
-function resolveService(
-  ControllerClass: new (...args: any[]) => any
-): any | null {
-  const controllerName = ControllerClass.name;
-  const moduleName = controllerName.replace("Controller", "");
-  const serviceName = `${moduleName}Service`;
+class ServiceResolver {
+  static resolve(ControllerClass: new (...args: any[]) => any): any | null {
+    const controllerName = ControllerClass.name;
+    const moduleName = controllerName.replace("Controller", "");
+    const serviceName = `${moduleName}Service`;
 
-  try {
-    const servicePath = path.resolve(
-      __dirname,
-      "..",
-      "modules",
-      moduleName,
-      `${serviceName}.ts`
-    );
-    const ServiceModule = require(servicePath);
-    const ServiceClass = ServiceModule.default || ServiceModule[serviceName];
+    try {
+      const servicePath = path.resolve(
+        __dirname,
+        "..",
+        "modules",
+        moduleName,
+        `${serviceName}.ts`
+      );
+      const ServiceModule = require(servicePath);
+      const ServiceClass = ServiceModule.default || ServiceModule[serviceName];
 
-    if (!ServiceClass) {
-      throw new Error(`Service class not found in module: ${servicePath}`);
+      if (!ServiceClass) {
+        console.warn(
+          `Service class not found in module: ${servicePath}. Controller will be instantiated without a service.`
+        );
+        return null;
+      }
+
+      return ServiceClass;
+    } catch (error) {
+      // console.warn(`Error resolving service for ${controllerName}:`, error);
+      console.warn(
+        `Controller ${controllerName} will be instantiated without a service.`
+      );
+      return null;
     }
-
-    return ServiceClass;
-  } catch (error) {
-    console.error(`Error resolving service for ${controllerName}:`, error);
-    throw new Error(`Service not found for controller: ${controllerName}`);
   }
 }
 
-function getAdditionalServices(controllerInstance: any): string[] {
-  return Object.entries(controllerInstance)
-    .filter(
-      ([key, value]) =>
-        key.toLowerCase().includes("service") && typeof value === "object"
-    )
-    .map(([key]) => key);
-}
+class RouteHandler {
+  private router: Hono;
+  private bootInfo: RouteInfo[];
+  private globalPrefix: string;
 
-function getFuncName(func: Function | object): string {
-  if (Array.isArray(func)) {
-    return func.map((f) => getFuncName(f)).join(", ");
+  constructor(router: Hono, bootInfo: RouteInfo[], globalPrefix: string) {
+    this.router = router;
+    this.bootInfo = bootInfo;
+    this.globalPrefix = globalPrefix;
   }
-  if (typeof func === "function" && func.name) return func.name;
-  if (typeof func === "object" && func.constructor && func.constructor.name)
-    return func.constructor.name;
-  return "middleware";
-}
 
-export default function setupRoutes(
-  app: Hono,
-  routesConfig: RouteConfig[],
-  prefix: { prefix: string }
-): RouteInfo[] {
-  const globalPrefix = prefix.prefix;
-  const bootInfo: RouteInfo[] = [];
+  // Add this utility function to handle path joining without leading/trailing slashes
+  private joinPaths(...paths: string[]): string {
+    return paths
+      .map((p) => p.replace(/^\/+|\/+$/g, ""))
+      .filter(Boolean)
+      .join("/");
+  }
 
-  function setupRoute(
-    router: Hono,
-    routeConfig: RouteConfig,
-    basePath: string = ""
-  ) {
+  setupRoute(routeConfig: RouteConfig, basePath: string = "") {
     const {
       path: routePath,
       controller: ControllerClass,
@@ -72,96 +67,48 @@ export default function setupRoutes(
       nestedRoutes = [],
     } = routeConfig;
 
-    const fullPath = path.join(basePath, routePath).replace(/\\/g, "/");
-    const relativePath = routePath.startsWith("/")
-      ? routePath
-      : `/${routePath}`;
+    const fullPath = this.joinPaths(basePath, routePath);
+    const relativePath = "/" + fullPath;
 
     try {
-      const ServiceClass = resolveService(ControllerClass);
-      const controllerInstance = new ControllerClass(new ServiceClass());
+      const ServiceClass = ServiceResolver.resolve(ControllerClass);
+      let controllerInstance;
+      if (ServiceClass) {
+        controllerInstance = new ControllerClass(new ServiceClass());
+      } else {
+        controllerInstance = new ControllerClass();
+      }
 
       const routeRouter = new Hono();
 
-      // Apply middlewares
-      if (Array.isArray(middlewares)) {
-        middlewares.forEach((mw) => routeRouter.use("*", mw));
-      } else if (typeof middlewares === "function") {
-        routeRouter.use("*", middlewares);
-      }
+      this.applyMiddlewares(routeRouter, middlewares);
+      const additionalServices = this.getAdditionalServices(controllerInstance);
 
-      // Get additional services
-      const additionalServices = getAdditionalServices(
-        controllerInstance
-      ).filter((service) => service !== "service");
-
-      // Set up extra routes
-      const extraRoutes = controllerInstance.getExtraRoutes();
-      extraRoutes.forEach(
-        ({
-          method,
-          path: extraPath,
-          handler,
-          middlewares: routeMiddlewares = [],
-        }: {
-          method: string;
-          path: string;
-          handler: Function;
-          middlewares: MiddlewareHandler[];
-        }) => {
-          const routeHandler = (c: Context) =>
-            handler.call(controllerInstance, c);
-          if (Array.isArray(routeMiddlewares) && routeMiddlewares.length > 0) {
-            (routeRouter as any)[method.toLowerCase()](
-              extraPath,
-              ...routeMiddlewares,
-              routeHandler
-            );
-          } else {
-            (routeRouter as any)[method.toLowerCase()](extraPath, routeHandler);
-          }
-          bootInfo.push({
-            path: path
-              .join(globalPrefix, fullPath, extraPath)
-              .replace(/\\/g, "/"),
-            controller: ControllerClass.name,
-            services: [
-              ServiceClass ? ServiceClass.name : null,
-              ...additionalServices,
-            ].filter(Boolean),
-            middlewares: [...routeMiddlewares.map((mw) => getFuncName(mw))],
-            methods: [method.toUpperCase()],
-          });
-        }
+      this.setupExtraRoutes(
+        routeRouter,
+        controllerInstance,
+        fullPath,
+        ControllerClass,
+        ServiceClass,
+        additionalServices
       );
 
-      // Standard RESTful routes
       if (standardRoutes) {
-        bootInfo.push({
-          path: path.join(globalPrefix, fullPath).replace(/\\/g, "/"),
-          controller: ControllerClass.name,
-          services: [
-            ServiceClass ? ServiceClass.name : null,
-            ...additionalServices,
-          ].filter(Boolean),
-          middlewares: [],
-          methods: ["GET", "POST", "GET", "PUT", "DELETE"],
-        });
-
-        routeRouter.get("/", controllerInstance.getAll);
-        routeRouter.post("/", controllerInstance.create);
-        routeRouter.get("/:id", controllerInstance.getById);
-        routeRouter.put("/:id", controllerInstance.update);
-        routeRouter.delete("/:id", controllerInstance.delete);
+        this.setupStandardRoutes(
+          routeRouter,
+          controllerInstance,
+          fullPath,
+          ControllerClass,
+          ServiceClass,
+          additionalServices
+        );
       }
 
-      // Set up nested routes
       nestedRoutes.forEach((nestedRoute) => {
-        setupRoute(routeRouter, nestedRoute, fullPath);
+        this.setupRoute(nestedRoute, fullPath);
       });
 
-      // Mount the route router
-      router.route(relativePath, routeRouter);
+      this.router.route(relativePath, routeRouter);
     } catch (error) {
       console.error(
         `Error setting up routes for ${ControllerClass.name}:`,
@@ -170,9 +117,165 @@ export default function setupRoutes(
     }
   }
 
-  const mainRouter = new Hono();
-  routesConfig.forEach((config) => setupRoute(mainRouter, config));
-  app.route(globalPrefix, mainRouter);
-  printBootInfo(bootInfo);
-  return bootInfo;
+  private applyMiddlewares(
+    router: Hono,
+    middlewares: MiddlewareHandler | MiddlewareHandler[]
+  ) {
+    if (Array.isArray(middlewares)) {
+      middlewares.forEach((mw) => router.use("*", mw));
+    } else if (typeof middlewares === "function") {
+      router.use("*", middlewares);
+    }
+  }
+
+  private getAdditionalServices(controllerInstance: any): string[] {
+    return Object.entries(controllerInstance)
+      .filter(
+        ([key, value]) =>
+          key.toLowerCase().includes("service") && typeof value === "object"
+      )
+      .map(([key]) => key);
+  }
+
+  private setupExtraRoutes(
+    routeRouter: Hono,
+    controllerInstance: any,
+    fullPath: string,
+    ControllerClass: new (...args: any[]) => any,
+    ServiceClass: any,
+    additionalServices: string[]
+  ) {
+    const extraRoutes = controllerInstance.getExtraRoutes();
+    extraRoutes.forEach(
+      ({
+        method,
+        path: extraPath,
+        handler,
+        handlerName,
+        middlewares: routeMiddlewares = [],
+      }: {
+        method: string;
+        path: string;
+        handler: Function;
+        handlerName: string;
+        middlewares: MiddlewareHandler[];
+      }) => {
+        const routeHandler = (c: Context) =>
+          handler.call(controllerInstance, c);
+        const routePath = extraPath;
+
+        if (routeMiddlewares.length > 0) {
+          (routeRouter as any)[method.toLowerCase()](
+            routePath,
+            ...routeMiddlewares,
+            routeHandler
+          );
+        } else {
+          (routeRouter as any)[method.toLowerCase()](routePath, routeHandler);
+        }
+
+        this.bootInfo.push({
+          path: path
+            .join(this.globalPrefix, fullPath, routePath)
+            .replace(/\\/g, "/"),
+          controller: ControllerClass.name,
+          services: [
+            ServiceClass ? ServiceClass.name : null,
+            ...additionalServices,
+          ].filter(Boolean),
+          middlewares: routeMiddlewares.map((mw) => this.getFuncName(mw)),
+          methods: [method.toUpperCase()],
+          handler: handlerName,
+        });
+      }
+    );
+  }
+
+  private setupStandardRoutes(
+    routeRouter: Hono,
+    controllerInstance: any,
+    fullPath: string,
+    ControllerClass: new (...args: any[]) => any,
+    ServiceClass: any,
+    additionalServices: string[]
+  ) {
+    const standardRoutesInfo = [
+      { path: "/", method: "GET", handlerName: "getAll" },
+      { path: "/", method: "POST", handlerName: "create" },
+      { path: "/:id", method: "GET", handlerName: "getById" },
+      { path: "/:id", method: "PUT", handlerName: "update" },
+      { path: "/:id", method: "DELETE", handlerName: "delete" },
+    ];
+
+    standardRoutesInfo.forEach(({ path: routePath, method, handlerName }) => {
+      const handler = controllerInstance[handlerName];
+      if (typeof handler === "function") {
+        (routeRouter as any)[method.toLowerCase()](routePath, handler);
+        this.bootInfo.push({
+          path: path
+            .join(this.globalPrefix, fullPath, routePath)
+            .replace(/\\/g, "/"),
+          controller: ControllerClass.name,
+          services: [
+            ServiceClass ? ServiceClass.name : null,
+            ...additionalServices,
+          ].filter(Boolean),
+          middlewares: [],
+          methods: [method],
+          handler: handler.name,
+        });
+      }
+    });
+  }
+
+  private getFuncName(func: Function | object): string {
+    if (Array.isArray(func)) {
+      return func.map((f) => this.getFuncName(f)).join(", ");
+    }
+    if (typeof func === "function" && func.name) return func.name;
+    if (typeof func === "object" && func.constructor && func.constructor.name)
+      return func.constructor.name;
+    return "middleware";
+  }
+}
+
+export class RouteRegistrar {
+  private app: Hono;
+  private routesConfig: RouteConfig[];
+  private globalPrefix: string;
+
+  constructor(
+    app: Hono,
+    routesConfig: RouteConfig[],
+    prefix: { prefix: string }
+  ) {
+    this.app = app;
+    this.routesConfig = routesConfig;
+    this.globalPrefix = prefix.prefix;
+  }
+
+  register(): RouteInfo[] {
+    const bootInfo: RouteInfo[] = [];
+    const mainRouter = new Hono();
+    const routeHandler = new RouteHandler(
+      mainRouter,
+      bootInfo,
+      this.globalPrefix
+    );
+
+    this.routesConfig.forEach((config) => routeHandler.setupRoute(config));
+
+    this.app.route(this.globalPrefix, mainRouter);
+    printBootInfo(bootInfo);
+    return bootInfo;
+  }
+}
+
+export function setupRoutes(
+  app: Hono,
+  routesConfig: RouteConfig[],
+  prefix: { prefix: string }
+): RouteInfo[] {
+  const registrar = new RouteRegistrar(app, routesConfig, prefix);
+  return registrar.register();
 }

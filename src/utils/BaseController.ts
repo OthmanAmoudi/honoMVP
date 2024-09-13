@@ -4,10 +4,10 @@ import { BaseService } from "./BaseService";
 import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
 
 export abstract class BaseController<T extends BaseService = BaseService> {
-  protected service: T;
+  protected service?: T;
 
   constructor(service?: T) {
-    this.service = service || (new DummyService() as T);
+    this.service = service;
   }
   protected async handleResponse(c: Context, action: () => Promise<any>) {
     try {
@@ -30,6 +30,9 @@ export abstract class BaseController<T extends BaseService = BaseService> {
   }
   getAll = async (c: Context) => {
     return this.handleResponse(c, async () => {
+      if (!this.service || !this.service.getAll) {
+        return c.json({ error: "Not Implemented" }, 501);
+      }
       // Extract cursor and limit from query parameters
       let cursor: string | number | undefined = c.req.query("cursor");
       // If cursor can be converted to a number, convert it; otherwise, keep it as a string or undefined
@@ -51,6 +54,9 @@ export abstract class BaseController<T extends BaseService = BaseService> {
 
   getById = async (c: Context) => {
     return this.handleResponse(c, async () => {
+      if (!this.service || !this.service.getAll) {
+        return c.json({ error: "Not Implemented" }, 501);
+      }
       const id = c.req.param("id");
       const item = await this.service.getById(id);
       return c.json(item);
@@ -59,6 +65,9 @@ export abstract class BaseController<T extends BaseService = BaseService> {
 
   create = async (c: Context) => {
     return this.handleResponse(c, async () => {
+      if (!this.service || !this.service.getAll) {
+        return c.json({ error: "Not Implemented" }, 501);
+      }
       const data = await c.req.json();
       const newItem = await this.service.create(data);
       return c.json(newItem, 201);
@@ -67,6 +76,9 @@ export abstract class BaseController<T extends BaseService = BaseService> {
 
   update = async (c: Context) => {
     return this.handleResponse(c, async () => {
+      if (!this.service || !this.service.getAll) {
+        return c.json({ error: "Not Implemented" }, 501);
+      }
       const id = c.req.param("id");
       const data = await c.req.json();
       const updatedItem = await this.service.update(id, data);
@@ -76,17 +88,20 @@ export abstract class BaseController<T extends BaseService = BaseService> {
 
   delete = async (c: Context) => {
     return this.handleResponse(c, async () => {
+      if (!this.service || !this.service.getAll) {
+        return c.json({ error: "Not Implemented" }, 501);
+      }
       const id = c.req.param("id");
       await this.service.delete(id);
       c.status(204);
       return c.body(null);
     });
   };
-  // Method to get extra routes
   getExtraRoutes(): {
     method: string;
     path: string;
     handler: (c: Context) => Promise<any>;
+    handlerName: string;
     middlewares?: any[];
   }[] {
     const proto = Object.getPrototypeOf(this);
@@ -101,6 +116,7 @@ export abstract class BaseController<T extends BaseService = BaseService> {
             "update",
             "delete",
             "getExtraRoutes",
+            "handleResponse",
           ].includes(name)
       )
       .map((name) => {
@@ -109,7 +125,7 @@ export abstract class BaseController<T extends BaseService = BaseService> {
         const middlewares =
           Reflect.getMetadata("middlewares", proto, name) || [];
 
-        if (!path) {
+        if (path === undefined || path === null) {
           console.warn(
             `No path specified for method ${name}. This route will not be registered.`
           );
@@ -120,32 +136,11 @@ export abstract class BaseController<T extends BaseService = BaseService> {
           method,
           path,
           handler: (c: Context) => (this as any)[name](c),
+          handlerName: name,
           middlewares,
         };
       })
       .filter((route) => route !== null);
-    return extraRoutes;
-  }
-}
-// Dummy service that throws "Not Implemented" for all methods
-class DummyService extends BaseService {
-  async getAll(): Promise<any[]> {
-    throw new Error("Method not implemented");
-  }
-
-  async getById(id: number | string): Promise<any> {
-    throw new Error("Method not implemented");
-  }
-
-  async create(data: any): Promise<any> {
-    throw new Error("Method not implemented");
-  }
-
-  async update(id: number | string, data: any): Promise<any> {
-    throw new Error("Method not implemented");
-  }
-
-  async delete(id: number | string): Promise<void> {
-    throw new Error("Method not implemented");
+    return extraRoutes as any;
   }
 }
