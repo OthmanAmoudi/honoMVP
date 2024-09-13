@@ -8,7 +8,7 @@ import { logger } from "hono/logger";
 
 const app = new Hono();
 // Global Middlewares
-app.use(logger());
+// app.use(logger());
 
 // Routes
 setupRoutes(app, routesConfig, { prefix: "/api" });

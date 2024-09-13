@@ -6,13 +6,15 @@ import { logger } from "hono/logger";
 import { loggingMiddleware } from "../../middlewares/AuthMiddleware";
 import NoteService from "./GeneralService";
 
-export default class GeneralController extends BaseController<NoteService> {
-  constructor(noteService: NoteService) {
-    super(noteService);
+export default class GeneralController extends BaseController {
+  constructor() {
+    super();
   }
 
+  //   @Use([logger(), loggingMiddleware])
   @Get("/general")
-  @Use([logger(), loggingMiddleware])
+  @Use(loggingMiddleware)
+  @Use(logger())
   async xxx(c: Context) {
     console.log("General controller reached");
     return c.json({
