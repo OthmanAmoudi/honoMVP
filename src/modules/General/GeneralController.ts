@@ -12,6 +12,17 @@ export default class GeneralController extends BaseController {
   }
 
   //   @Use([logger(), loggingMiddleware])
+  @Get("/")
+  async fff(c: Context) {
+    console.log("General controller reached");
+    return c.json({
+      notes: [
+        { id: 1, content: "fff 1" },
+        { id: 2, content: "fff 2" },
+        { id: 3, content: "fff 3" },
+      ],
+    });
+  }
   @Get("/general")
   @Use(loggingMiddleware)
   @Use(logger())

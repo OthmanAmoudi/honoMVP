@@ -19,7 +19,7 @@ const routeConfig: RouteConfig[] = [
       {
         path: "/ooo",
         controller: GeneralController,
-        // standardRoutes: false,
+        standardRoutes: false,
       },
     ],
   },
