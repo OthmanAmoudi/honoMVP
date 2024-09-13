@@ -4,11 +4,10 @@ import {
   createdAtColumn,
   nanoidIdColumn,
   updatedAtColumn,
-} from "../../db/customefields-mysql";
+} from "../../db/fields/customefields-postgresql";
+import { pgTable, text, boolean } from "drizzle-orm/pg-core";
 
-import { mysqlTable, text, boolean } from "drizzle-orm/mysql-core";
-
-export const todosTable = mysqlTable("todos", {
+export const todosTable = pgTable("todos", {
   id: nanoidIdColumn(),
   content: text("content").notNull(),
   completed: boolean("completed").notNull().default(false),
@@ -17,6 +16,8 @@ export const todosTable = mysqlTable("todos", {
 });
 // Create TypeBox schemas for todos
 export const TodoSchema = createSelectSchema(todosTable);
+// for post request: only content is required, completed is optional, extra fields are ignored
+// for put request: all fields are optional, but if provided, they must match the schema
 export const InsertTodoSchema = Type.Object({
   content: Type.String(),
   completed: Type.Optional(Type.Boolean()),

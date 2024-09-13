@@ -4,6 +4,7 @@ import NoteService from "./NoteService";
 import { Get, Use } from "../../utils/RouteDecorators";
 import { logger } from "hono/logger";
 import { TodoService } from "../Todo/TodoService";
+import { loggingMiddleware } from "../../middlewares/AuthMiddleware";
 
 export default class NoteController extends BaseController<NoteService> {
   private todoService: TodoService;
@@ -13,7 +14,7 @@ export default class NoteController extends BaseController<NoteService> {
   }
 
   @Get("/xxx")
-  @Use(logger())
+  @Use(loggingMiddleware)
   async getAllNotes(c: Context) {
     const notes = await this.service.getAll();
     return c.json(notes);

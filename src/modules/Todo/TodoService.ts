@@ -43,12 +43,11 @@ export class TodoService extends BaseService {
     return this.handleErrors(async () => {
       // Validate the incoming request using TypeBox schema
       const cleanedData = this.validate(InsertTodoSchema, data);
-      const createdId = await this.db
+      const result = await this.db
         .insert(todosTable)
         .values(cleanedData)
-        .$returningId();
-      const result = await this.getById(createdId[0].id);
-      return result;
+        .returning();
+      return result[0];
     });
   }
 
@@ -56,16 +55,14 @@ export class TodoService extends BaseService {
   async update(id: string, data: Partial<NewTodo>): Promise<Todo> {
     return this.handleErrors(async () => {
       const cleanedData = this.validate(UpdateTodoSchema, data);
-      const updatedId = await this.db
+      const result = await this.db
         .update(todosTable)
         .set(cleanedData)
-        .where(eq(todosTable.id, id)); // convert to number if your id is a number e.g Number(id)
-      // .returning();
-      if (!updatedId[0].affectedRows) {
+        .where(eq(todosTable.id, id)) // convert to number if your id is a number e.g Number(id)
+        .returning();
+      if (!result.length)
         throw new NotFoundError(`Resource with id ${id} not found`);
-      }
-      const result = await this.getById(id);
-      return result;
+      return result[0];
     });
   }
 
@@ -74,11 +71,10 @@ export class TodoService extends BaseService {
     return this.handleErrors(async () => {
       const result = await this.db
         .delete(todosTable)
-        .where(eq(todosTable.id, id)); // convert to number if your id is a number e.g Number(id)
-      // .returning();
-      if (!result[0].affectedRows) {
+        .where(eq(todosTable.id, id)) // convert to number if your id is a number e.g Number(id)
+        .returning();
+      if (!result.length)
         throw new NotFoundError(`Resource with id ${id} not found`);
-      }
     });
   }
 }

@@ -1,5 +1,5 @@
 // src/services/BaseService.ts
-import { MySql2Database } from "drizzle-orm/mysql2";
+import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { db } from "../db/singletonDBInstance";
 import {
   ValidationError,
@@ -11,7 +11,7 @@ import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 
 export abstract class BaseService {
-  protected db!: MySql2Database; // Use ! to tell TypeScript that it's initialized later
+  protected db!: PostgresJsDatabase; // Use ! to tell TypeScript that it's initialized later
   constructor() {
     // Using async IIFE to initialize the db
     (async () => {
@@ -24,12 +24,14 @@ export abstract class BaseService {
       if (!this.db) {
         throw new Error("Database is not initialized");
       }
+      console.log("ttt");
       return await method();
     } catch (error) {
       if (error instanceof ValidationError) {
         throw new ValidationError("Validation failed", error);
       }
       if (error instanceof NotFoundError) {
+        console.log("aaa");
         throw error;
       }
       console.error("Unexpected error:", error);

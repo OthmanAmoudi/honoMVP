@@ -8,7 +8,7 @@ import {
   notesTable,
   UpdateNote,
   Note,
-} from "./NoteModel";
+} from "../Note/NoteModel";
 export default class NoteService extends BaseService {
   async getAll(cursor?: string, limit: number = 3): Promise<Note[]> {
     return this.handleErrors(async () => {

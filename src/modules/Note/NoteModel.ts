@@ -2,14 +2,13 @@ import {
   nanoidIdColumn,
   createdAtColumn,
   updatedAtColumn,
-} from "../../db/customefields-mysql";
+} from "../../db/fields/customefields-postgresql";
 import { createSelectSchema } from "drizzle-typebox";
 import { Static, Type } from "@sinclair/typebox";
-import { mysqlTable, text, int } from "drizzle-orm/mysql-core";
+import { pgTable, text } from "drizzle-orm/pg-core";
 
 // Example table that extends with common fields
-export const notesTable = mysqlTable("notes", {
-  // mysql doesnt support returning after insert, this was made for specifically 'create' method in services
+export const notesTable = pgTable("notes", {
   id: nanoidIdColumn(),
   description: text("description").notNull(),
   createdAt: createdAtColumn(),

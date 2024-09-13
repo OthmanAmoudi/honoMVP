@@ -2,17 +2,23 @@
 import { Context } from "hono";
 import { BaseService } from "./BaseService";
 import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
-export abstract class BaseController<T extends BaseService> {
-  constructor(protected service: T) {}
 
+export abstract class BaseController<T extends BaseService = BaseService> {
+  protected service: T;
+
+  constructor(service?: T) {
+    this.service = service || (new DummyService() as T);
+  }
   protected async handleResponse(c: Context, action: () => Promise<any>) {
     try {
+      console.log("ccc");
       return await action();
     } catch (error) {
       if (error instanceof ValidationError) {
         return c.json({ error: error.message, details: error.details }, 400);
       }
       if (error instanceof NotFoundError) {
+        console.log("eeeeeeeee");
         return c.json({ error: error.message }, 404);
       }
       if (error instanceof DatabaseError) {
@@ -119,5 +125,27 @@ export abstract class BaseController<T extends BaseService> {
       })
       .filter((route) => route !== null);
     return extraRoutes;
+  }
+}
+// Dummy service that throws "Not Implemented" for all methods
+class DummyService extends BaseService {
+  async getAll(): Promise<any[]> {
+    throw new Error("Method not implemented");
+  }
+
+  async getById(id: number | string): Promise<any> {
+    throw new Error("Method not implemented");
+  }
+
+  async create(data: any): Promise<any> {
+    throw new Error("Method not implemented");
+  }
+
+  async update(id: number | string, data: any): Promise<any> {
+    throw new Error("Method not implemented");
+  }
+
+  async delete(id: number | string): Promise<void> {
+    throw new Error("Method not implemented");
   }
 }
