@@ -26,9 +26,10 @@ function generateModule(moduleName) {
 import { BaseController } from "../../utils/BaseController";
 import ${moduleName}Service from "./${moduleName}Service";
 
-export default class ${moduleName}Controller extends BaseController<${moduleName}Service> {
-  constructor(${moduleName.toLowerCase()}Service: ${moduleName}Service) {
-    super(${moduleName.toLowerCase()}Service);
+export default class ${moduleName}Controller extends BaseController {
+  static services = [${moduleName}Service];
+  constructor(public ${moduleName.toLowerCase()}Service: ${moduleName}Service) {
+    super();
   }
 }
 `;
@@ -213,7 +214,7 @@ import {
   nanoidIdColumn,
   createdAtColumn,
   updatedAtColumn,
-} from "../../db/customefields-${dbType}";
+} from "../../db/fields/customefields-${dbType}";
 import { createSelectSchema } from "drizzle-typebox";
 import { Static, Type } from "@sinclair/typebox";
 
@@ -252,7 +253,7 @@ export type Update${moduleName} = Static<typeof Update${moduleName}Schema>;
   const importStatement = `import ${moduleName}Controller from "./modules/${moduleName}/${moduleName}Controller";`;
   const newRoute = `
    {
-     path: "/${moduleName.toLowerCase()}s",
+     path: "${moduleName.toLowerCase()}s",
      controller: ${moduleName}Controller,
    },`;
 
