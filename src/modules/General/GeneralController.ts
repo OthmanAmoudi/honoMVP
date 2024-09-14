@@ -16,8 +16,9 @@ export default class GeneralController extends BaseController {
   @Get("/")
   async fff(c: Context) {
     console.log("General controller reached");
-    // const todos = await this.todoService.getAll();
-    // return c.json(todos);
+    const todos = await this.todoService.getAll();
+    // console.log({ todos });
+    return c.json(todos);
     return c.json({
       notes: [
         { id: 1, content: "fff 1" },
@@ -38,7 +39,7 @@ export default class GeneralController extends BaseController {
     });
   }
 
-  @Get("general")
+  @Get("/general")
   @Use(loggingMiddleware)
   @Use(logger())
   async xxx(c: Context) {
@@ -52,7 +53,7 @@ export default class GeneralController extends BaseController {
     });
   }
 
-  @Get("general2")
+  @Get("/general2")
   async bbb(c: Context) {
     return c.json({
       todos: [

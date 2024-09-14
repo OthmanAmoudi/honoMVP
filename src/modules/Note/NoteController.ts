@@ -12,14 +12,14 @@ export default class NoteController extends BaseController {
     public noteService: NoteService,
     public todoService: TodoService
   ) {
-    super(noteService);
+    super();
   }
 
   @Get("/xxx")
   @Use(loggingMiddleware)
   async getAllNotes(c: Context) {
     const notes = await this.noteService.getAll();
-    // const notes = await this.todoService.getAll(); //Error: Property 'todoService' does not exist on type 'NoteController'.ts(2339)
+    // const notes = await this.todoService.getAll();
     return c.json(notes);
   }
 

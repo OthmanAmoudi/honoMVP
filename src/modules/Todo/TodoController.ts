@@ -7,6 +7,6 @@ export default class TodoController extends BaseController {
   static services = [TodoService];
 
   constructor(public todoService: TodoService) {
-    super(todoService);
+    super();
   }
 }

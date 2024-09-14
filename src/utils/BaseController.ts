@@ -5,9 +5,10 @@ import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
 export abstract class BaseController {
   protected service: any;
 
-  constructor(service?: any) {
-    this.service = service;
+  constructor() {
+    // No parameters and no assignments needed
   }
+
   protected async handleResponse(
     c: Context,
     action: () => Promise<Response>

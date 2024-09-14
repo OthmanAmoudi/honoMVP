@@ -10,13 +10,11 @@ import {
 import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 
-export abstract class BaseService<TEntity, TSchemaType extends TSchema> {
+export abstract class BaseService {
   protected db: PostgresJsDatabase;
-  protected schema: TSchemaType;
 
-  constructor(db: PostgresJsDatabase, schema: TSchemaType) {
+  constructor(db: PostgresJsDatabase) {
     this.db = db;
-    this.schema = schema;
   }
 
   private async initDb() {
@@ -79,15 +77,9 @@ export abstract class BaseService<TEntity, TSchemaType extends TSchema> {
     }
   }
 
-  abstract getAll(
-    cursor?: number | string,
-    limit?: number
-  ): Promise<Static<TSchemaType>[]>;
-  abstract getById(id: number | string): Promise<Static<TSchemaType>>;
-  abstract create(data: unknown): Promise<Static<TSchemaType>>;
-  abstract update(
-    id: number | string,
-    data: unknown
-  ): Promise<Static<TSchemaType>>;
+  abstract getAll(cursor?: number | string, limit?: number): Promise<any[]>;
+  abstract getById(id: number | string): Promise<any>;
+  abstract create(data: any): Promise<any>;
+  abstract update(id: number | string, data: any): Promise<any>;
   abstract delete(id: number | string): Promise<void>;
 }

@@ -62,7 +62,10 @@ class RouteHandler {
 
       // Instantiate the controller with all services
       const controllerInstance = new ControllerClass(...services);
-
+      // Automatically assign the main service to this.service
+      if (!controllerInstance.service && services.length > 0) {
+        controllerInstance.service = services[0];
+      }
       const routeRouter = new Hono();
 
       this.applyMiddlewares(routeRouter, middlewares);

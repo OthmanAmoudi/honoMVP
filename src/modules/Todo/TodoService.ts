@@ -7,18 +7,10 @@ import {
   UpdateTodoSchema,
   NewTodo,
   todosTable,
-  TodoSchema,
 } from "./TodoModel";
 import { NotFoundError } from "../../utils";
-import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
-// Define the TodoService that extends BaseService
-export default class TodoService extends BaseService<Todo, typeof TodoSchema> {
-  db: PostgresJsDatabase;
-  constructor(db: PostgresJsDatabase) {
-    super(db, TodoSchema);
-    this.db = db;
-  }
+export default class TodoService extends BaseService {
   async getAll(cursor?: string, limit: number = 3): Promise<Todo[]> {
     return this.handleErrors(async () => {
       const result = await this.db
