@@ -4,38 +4,25 @@ import path from "node:path";
 import { RouteConfig, RouteInfo } from "./types";
 import { printBootInfo } from "./BootLogger";
 
-class ServiceResolver {
-  static resolve(ControllerClass: new (...args: any[]) => any): any | null {
-    const controllerName = ControllerClass.name;
-    const moduleName = controllerName.replace("Controller", "");
-    const serviceName = `${moduleName}Service`;
+import { db } from "../db/singletonDBInstance"; // Assume this returns Promise<PostgresJsDatabase>
+import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
-    try {
-      const servicePath = path.resolve(
-        __dirname,
-        "..",
-        "modules",
-        moduleName,
-        `${serviceName}.ts`
-      );
-      const ServiceModule = require(servicePath);
-      const ServiceClass = ServiceModule.default || ServiceModule[serviceName];
+export class ServiceResolver {
+  private static dbInstance: PostgresJsDatabase;
 
-      if (!ServiceClass) {
-        console.warn(
-          `Service class not found in module: ${servicePath}. Controller will be instantiated without a service.`
-        );
-        return null;
-      }
-
-      return ServiceClass;
-    } catch (error) {
-      // console.warn(`Error resolving service for ${controllerName}:`, error);
-      console.warn(
-        `Controller ${controllerName} will be instantiated without a service.`
-      );
-      return null;
+  static async initDb() {
+    if (!this.dbInstance) {
+      this.dbInstance = await db(); // Initialize db instance
     }
+    return this.dbInstance;
+  }
+
+  static async resolveServices(ControllerClass: any): Promise<any[]> {
+    const serviceClasses = ControllerClass.services || [];
+    const dbInstance = await this.initDb();
+    return serviceClasses.map((ServiceClass: any) => {
+      return new ServiceClass(dbInstance); // Pass db instance to service constructor
+    });
   }
 }
 
@@ -50,15 +37,14 @@ class RouteHandler {
     this.globalPrefix = globalPrefix;
   }
 
-  // Add this utility function to handle path joining without leading/trailing slashes
   private joinPaths(...paths: string[]): string {
     return paths
-      .map((p) => p.replace(/^\/+|\/+$/g, ""))
+      .map((p) => p.replace(/^\/+|\/+$/g, "")) // Remove leading and trailing slashes
       .filter(Boolean)
       .join("/");
   }
 
-  setupRoute(routeConfig: RouteConfig, basePath: string = "") {
+  async setupRoute(routeConfig: RouteConfig, basePath: string = "") {
     const {
       path: routePath,
       controller: ControllerClass,
@@ -71,42 +57,42 @@ class RouteHandler {
     const relativePath = "/" + fullPath;
 
     try {
-      const ServiceClass = ServiceResolver.resolve(ControllerClass);
-      let controllerInstance;
-      if (ServiceClass) {
-        controllerInstance = new ControllerClass(new ServiceClass());
-      } else {
-        controllerInstance = new ControllerClass();
-      }
+      // Resolve all required services
+      const services = await ServiceResolver.resolveServices(ControllerClass);
+
+      // Instantiate the controller with all services
+      const controllerInstance = new ControllerClass(...services);
 
       const routeRouter = new Hono();
 
       this.applyMiddlewares(routeRouter, middlewares);
       const additionalServices = this.getAdditionalServices(controllerInstance);
 
-      this.setupExtraRoutes(
+      // Ensure these methods are async and awaited
+      await this.setupExtraRoutes(
         routeRouter,
         controllerInstance,
         fullPath,
         ControllerClass,
-        ServiceClass,
+        services.map((s) => s.constructor.name),
         additionalServices
       );
 
       if (standardRoutes) {
-        this.setupStandardRoutes(
+        await this.setupStandardRoutes(
           routeRouter,
           controllerInstance,
           fullPath,
           ControllerClass,
-          ServiceClass,
+          services.map((s) => s.constructor.name),
           additionalServices
         );
       }
 
-      nestedRoutes.forEach((nestedRoute) => {
-        this.setupRoute(nestedRoute, fullPath);
-      });
+      // Process nested routes and await their setup
+      for (const nestedRoute of nestedRoutes) {
+        await this.setupRoute(nestedRoute, fullPath);
+      }
 
       this.router.route(relativePath, routeRouter);
     } catch (error) {
@@ -137,7 +123,7 @@ class RouteHandler {
       .map(([key]) => key);
   }
 
-  private setupExtraRoutes(
+  private async setupExtraRoutes(
     routeRouter: Hono,
     controllerInstance: any,
     fullPath: string,
@@ -153,12 +139,14 @@ class RouteHandler {
         handler,
         handlerName,
         middlewares: routeMiddlewares = [],
+        serviceNames = [],
       }: {
         method: string;
         path: string;
         handler: Function;
         handlerName: string;
         middlewares: MiddlewareHandler[];
+        serviceNames: string[];
       }) => {
         const routeHandler = (c: Context) =>
           handler.call(controllerInstance, c);
@@ -179,10 +167,7 @@ class RouteHandler {
             .join(this.globalPrefix, fullPath, routePath)
             .replace(/\\/g, "/"),
           controller: ControllerClass.name,
-          services: [
-            ServiceClass ? ServiceClass.name : null,
-            ...additionalServices,
-          ].filter(Boolean),
+          services: [...serviceNames, ...additionalServices].filter(Boolean),
           middlewares: routeMiddlewares.map((mw) => this.getFuncName(mw)),
           methods: [method.toUpperCase()],
           handler: handlerName,
@@ -191,17 +176,17 @@ class RouteHandler {
     );
   }
 
-  private setupStandardRoutes(
+  private async setupStandardRoutes(
     routeRouter: Hono,
     controllerInstance: any,
     fullPath: string,
     ControllerClass: new (...args: any[]) => any,
-    ServiceClass: any,
+    serviceNames: string[],
     additionalServices: string[]
-  ) {
+  ): Promise<void> {
     const standardRoutesInfo = [
-      { path: "/", method: "GET", handlerName: "getAll" },
-      { path: "/", method: "POST", handlerName: "create" },
+      { path: "", method: "GET", handlerName: "getAll" },
+      { path: "", method: "POST", handlerName: "create" },
       { path: "/:id", method: "GET", handlerName: "getById" },
       { path: "/:id", method: "PUT", handlerName: "update" },
       { path: "/:id", method: "DELETE", handlerName: "delete" },
@@ -216,10 +201,7 @@ class RouteHandler {
             .join(this.globalPrefix, fullPath, routePath)
             .replace(/\\/g, "/"),
           controller: ControllerClass.name,
-          services: [
-            ServiceClass ? ServiceClass.name : null,
-            ...additionalServices,
-          ].filter(Boolean),
+          services: [...serviceNames, ...additionalServices].filter(Boolean),
           middlewares: [],
           methods: [method],
           handler: handler.name,
@@ -254,7 +236,7 @@ export class RouteRegistrar {
     this.globalPrefix = prefix.prefix;
   }
 
-  register(): RouteInfo[] {
+  async register(): Promise<RouteInfo[]> {
     const bootInfo: RouteInfo[] = [];
     const mainRouter = new Hono();
     const routeHandler = new RouteHandler(
@@ -263,7 +245,9 @@ export class RouteRegistrar {
       this.globalPrefix
     );
 
-    this.routesConfig.forEach((config) => routeHandler.setupRoute(config));
+    for (const config of this.routesConfig) {
+      await routeHandler.setupRoute(config); // Await each route setup
+    }
 
     this.app.route(this.globalPrefix, mainRouter);
     printBootInfo(bootInfo);
@@ -271,11 +255,11 @@ export class RouteRegistrar {
   }
 }
 
-export function setupRoutes(
+export async function setupRoutes(
   app: Hono,
   routesConfig: RouteConfig[],
   prefix: { prefix: string }
-): RouteInfo[] {
+): Promise<RouteInfo[]> {
   const registrar = new RouteRegistrar(app, routesConfig, prefix);
-  return registrar.register();
+  return await registrar.register();
 }

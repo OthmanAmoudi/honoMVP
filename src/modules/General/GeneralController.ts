@@ -1,18 +1,23 @@
 // GeneralController.ts
 import { Context } from "hono";
 import { BaseController } from "../../utils/BaseController";
-import { Get, Use } from "../../utils/RouteDecorators";
+import { Get, Use } from "../../utils/Decorators";
 import { logger } from "hono/logger";
 import { loggingMiddleware } from "../../middlewares/AuthMiddleware";
+import TodoService from "../Todo/TodoService";
 
 export default class GeneralController extends BaseController {
-  constructor() {
+  static services = [TodoService];
+
+  constructor(public todoService: TodoService) {
     super();
   }
 
   @Get("/")
   async fff(c: Context) {
     console.log("General controller reached");
+    // const todos = await this.todoService.getAll();
+    // return c.json(todos);
     return c.json({
       notes: [
         { id: 1, content: "fff 1" },

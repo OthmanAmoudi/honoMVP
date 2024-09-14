@@ -10,13 +10,19 @@ import {
 import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 
-export abstract class BaseService {
-  protected db!: PostgresJsDatabase; // Use ! to tell TypeScript that it's initialized later
-  constructor() {
-    // Using async IIFE to initialize the db
-    (async () => {
-      this.db = await db(); // Await the resolved database instance
-    })();
+export abstract class BaseService<TEntity, TSchemaType extends TSchema> {
+  protected db: PostgresJsDatabase;
+  protected schema: TSchemaType;
+
+  constructor(db: PostgresJsDatabase, schema: TSchemaType) {
+    this.db = db;
+    this.schema = schema;
+  }
+
+  private async initDb() {
+    if (!this.db) {
+      this.db = await db(); // Initialize db instance
+    }
   }
   protected async handleErrors<U>(method: ServiceMethod<U>): Promise<U> {
     try {
@@ -73,9 +79,15 @@ export abstract class BaseService {
     }
   }
 
-  abstract getAll(cursor?: number | string, limit?: number): Promise<any[]>;
-  abstract getById(id: number | string): Promise<any>;
-  abstract create(data: any): Promise<any>;
-  abstract update(id: number | string, data: any): Promise<any>;
+  abstract getAll(
+    cursor?: number | string,
+    limit?: number
+  ): Promise<Static<TSchemaType>[]>;
+  abstract getById(id: number | string): Promise<Static<TSchemaType>>;
+  abstract create(data: unknown): Promise<Static<TSchemaType>>;
+  abstract update(
+    id: number | string,
+    data: unknown
+  ): Promise<Static<TSchemaType>>;
   abstract delete(id: number | string): Promise<void>;
 }

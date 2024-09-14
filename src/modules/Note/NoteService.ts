@@ -8,8 +8,16 @@ import {
   notesTable,
   UpdateNote,
   Note,
+  NoteSchema,
 } from "./NoteModel";
-export default class NoteService extends BaseService {
+import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+export default class NoteService extends BaseService<Note, typeof NoteSchema> {
+  db: PostgresJsDatabase;
+  constructor(db: PostgresJsDatabase) {
+    super(db, NoteSchema);
+    this.db = db;
+  }
+
   async getAll(cursor?: string, limit: number = 3): Promise<Note[]> {
     return this.handleErrors(async () => {
       return await this.db

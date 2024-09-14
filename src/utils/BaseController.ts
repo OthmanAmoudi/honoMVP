@@ -1,38 +1,35 @@
 // src/controllers/BaseController.ts
 import { Context } from "hono";
-import { BaseService } from "./BaseService";
 import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
 
-export abstract class BaseController<T extends BaseService = BaseService> {
-  protected service?: T;
+export abstract class BaseController {
+  protected service: any;
 
-  constructor(service?: T) {
+  constructor(service?: any) {
     this.service = service;
   }
-  protected async handleResponse(c: Context, action: () => Promise<any>) {
+  protected async handleResponse(
+    c: Context,
+    action: () => Promise<Response>
+  ): Promise<Response> {
     try {
-      console.log("ccc");
       return await action();
     } catch (error) {
       if (error instanceof ValidationError) {
         return c.json({ error: error.message, details: error.details }, 400);
-      }
-      if (error instanceof NotFoundError) {
-        console.log("eeeeeeeee");
+      } else if (error instanceof NotFoundError) {
         return c.json({ error: error.message }, 404);
-      }
-      if (error instanceof DatabaseError) {
+      } else if (error instanceof DatabaseError) {
         return c.json({ error: "A database error occurred" }, 500);
+      } else {
+        console.error("Unhandled error:", error);
+        return c.json({ error: "An unexpected error occurred" }, 500);
       }
-      console.error("Unhandled error:", error);
-      return c.json({ error: "An unexpected error occurred" }, 500);
     }
   }
+
   getAll = async (c: Context) => {
     return this.handleResponse(c, async () => {
-      if (!this.service || !this.service.getAll) {
-        return c.json({ error: "Not Implemented" }, 501);
-      }
       // Extract cursor and limit from query parameters
       let cursor: string | number | undefined = c.req.query("cursor");
       // If cursor can be converted to a number, convert it; otherwise, keep it as a string or undefined
@@ -54,9 +51,6 @@ export abstract class BaseController<T extends BaseService = BaseService> {
 
   getById = async (c: Context) => {
     return this.handleResponse(c, async () => {
-      if (!this.service || !this.service.getAll) {
-        return c.json({ error: "Not Implemented" }, 501);
-      }
       const id = c.req.param("id");
       const item = await this.service.getById(id);
       return c.json(item);
@@ -65,9 +59,6 @@ export abstract class BaseController<T extends BaseService = BaseService> {
 
   create = async (c: Context) => {
     return this.handleResponse(c, async () => {
-      if (!this.service || !this.service.getAll) {
-        return c.json({ error: "Not Implemented" }, 501);
-      }
       const data = await c.req.json();
       const newItem = await this.service.create(data);
       return c.json(newItem, 201);
@@ -76,9 +67,6 @@ export abstract class BaseController<T extends BaseService = BaseService> {
 
   update = async (c: Context) => {
     return this.handleResponse(c, async () => {
-      if (!this.service || !this.service.getAll) {
-        return c.json({ error: "Not Implemented" }, 501);
-      }
       const id = c.req.param("id");
       const data = await c.req.json();
       const updatedItem = await this.service.update(id, data);
@@ -88,9 +76,6 @@ export abstract class BaseController<T extends BaseService = BaseService> {
 
   delete = async (c: Context) => {
     return this.handleResponse(c, async () => {
-      if (!this.service || !this.service.getAll) {
-        return c.json({ error: "Not Implemented" }, 501);
-      }
       const id = c.req.param("id");
       await this.service.delete(id);
       c.status(204);
