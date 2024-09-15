@@ -9,7 +9,11 @@ import {
   UpdateNote,
   Note,
 } from "./NoteModel";
-export default class NoteService extends BaseService {
+export default class NoteService extends BaseService<
+  Note,
+  typeof InsertNoteSchema,
+  typeof UpdateNoteSchema
+> {
   async getAll(cursor?: string, limit: number = 3): Promise<Note[]> {
     return await this.db
       .select()
@@ -41,6 +45,7 @@ export default class NoteService extends BaseService {
 
   async update(id: string, data: UpdateNote) {
     const cleanedData = this.validate(UpdateNoteSchema, data);
+    console.log(cleanedData);
     const result = await this.db
       .update(notesTable)
       .set(cleanedData)

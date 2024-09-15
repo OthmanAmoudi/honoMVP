@@ -16,7 +16,7 @@ PUT http://localhost:3000/api/todos/0gnNm1jXHbpnUjKdyK0MA HTTP/1.1
 content-type: application/json
 
 {
-    "content": "test2",
+    "content": "test4",
     "completed": false
 }
 ###
@@ -39,14 +39,16 @@ content-type: application/json
     "description": "test 22 2 2 2 2"
 }
 ###
-GET http://localhost:3000/api/notes/Hk_2mwF-aEEEYsANCBIFB HTTP/1.1
+GET http://localhost:3000/api/notes/AdKuVz2jpFdG3W4QuWkz4 HTTP/1.1
 content-type: application/json
 ###
-PUT http://localhost:3000/api/notes/Hk_2mwF-aEEEYsANCBIFB HTTP/1.1
+PUT http://localhost:3000/api/notes/2024-05-01T00:00:00.000Z HTTP/1.1
 content-type: application/json
 
 {
-    "description": "test 44 44 444 4 "
+    "description": "test 44 44 444 4 ",
+    "SDFSDFSDF":"sdfsdFSDF",
+    "id":"xcvxcvxcv"
 }
 ###
 DELETE http://localhost:3000/api/notes/Hk_2mwF-aEEEYsANCBIFB HTTP/1.1

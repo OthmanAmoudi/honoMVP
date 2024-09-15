@@ -5,20 +5,23 @@ import { loggingMiddleware } from "../../middlewares/AuthMiddleware";
 import NoteService from "./NoteService";
 import TodoService from "../Todo/TodoService";
 
-export default class NoteController extends BaseController {
+export default class NoteController extends BaseController<NoteService> {
   static services = [NoteService, TodoService];
 
   constructor(
     public noteService: NoteService,
     public todoService: TodoService
   ) {
-    super();
+    super(noteService);
   }
 
   @Get("/xxx")
-  @Use(loggingMiddleware)
+  @Use(loggingMiddleware("***"))
   async getAllNotes(c: Context) {
-    const notes = await this.noteService.getAll();
+    const notes = {
+      id: "1",
+      content: "test",
+    }; //await this.noteService.getAll();
     // const notes = await this.todoService.getAll();
     return c.json(notes);
   }

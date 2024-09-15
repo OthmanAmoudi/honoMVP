@@ -3,16 +3,22 @@ import { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 
 export class ValidationError extends Error {
-  constructor(message: string, public details: unknown) {
+  public errors: string[];
+
+  constructor(message: string, errors: string[]) {
     super(message);
     this.name = "ValidationError";
+    this.errors = errors;
   }
 }
 
 export class NotFoundError extends Error {
+  public statusCode: number;
+
   constructor(message: string) {
     super(message);
     this.name = "NotFoundError";
+    this.statusCode = 404;
   }
 }
 

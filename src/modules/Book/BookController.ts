@@ -5,11 +5,15 @@ import { BaseController } from "../../utils/BaseController";
 import BookService from "./BookService";
 import { loggingMiddleware } from "../../middlewares/AuthMiddleware";
 import { logger } from "hono/logger";
+import TodoService from "../Todo/TodoService";
 
-export default class BookController extends BaseController {
-  static services = [BookService];
-  constructor(public bookService: BookService) {
-    super();
+export default class BookController extends BaseController<BookService> {
+  static services = [BookService, TodoService];
+  constructor(
+    public bookService: BookService,
+    public todoService: TodoService
+  ) {
+    super(bookService);
   }
 
   @Delete("/:id/:cid")
@@ -29,8 +33,9 @@ export default class BookController extends BaseController {
     console.log(c.req.query("term"));
     console.log(c.req.param("page"));
     console.log("books controller reached");
-    const todos = await this.bookService.getAll();
-    console.log({ todos });
+    const books = await this.bookService.getAll();
+    const todos = await this.todoService.getAll();
+    console.log({ books, todos });
     // return c.json(todos);
     return c.json({
       notes: [
@@ -47,7 +52,7 @@ export default class BookController extends BaseController {
     console.log(c.req.query("term"));
     console.log(c.req.param("page"));
     console.log("books controller reached");
-    const todos = await this.bookService.khr(xxx);
+    const todos = await this.bookService.getById(xxx);
     console.log({ todos });
     // return c.json(todos);
     return c.json({
@@ -65,7 +70,7 @@ export default class BookController extends BaseController {
     console.log(c.req.query("term"));
     console.log(c.req.param("page"));
     console.log("books controller reached");
-    const todos = await this.bookService.khr(xxx);
+    const todos = await this.bookService.getById(xxx);
     console.log({ todos });
     // return c.json(todos);
     return c.json({
@@ -83,7 +88,7 @@ export default class BookController extends BaseController {
     console.log(c.req.query("term"));
     console.log(c.req.param("page"));
     console.log("books controller reached");
-    const todos = await this.bookService.khr(xxx);
+    const todos = await this.bookService.getById(xxx);
     console.log({ todos });
     // return c.json(todos);
     return c.json({

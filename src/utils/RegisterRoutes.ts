@@ -6,6 +6,7 @@ import { printBootInfo } from "./BootLogger";
 import { db } from "../db/singletonDBInstance";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import "reflect-metadata";
+import { withErrorHandler } from "./errors";
 
 // Add this interface
 interface ControllerConstructor {
@@ -279,7 +280,7 @@ export async function setupRoutes(
   const registrar = new RouteRegistrar(app, routesConfig, prefix);
   app.onError((err, c) => {
     console.error("Error occurred:", err);
-    return c.json({ error: "An unexpected error occurred" }, 500);
+    return withErrorHandler(err, c);
   });
   return await registrar.register();
 }

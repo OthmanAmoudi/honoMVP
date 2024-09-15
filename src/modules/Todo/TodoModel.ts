@@ -1,5 +1,5 @@
 import { Static, Type } from "@sinclair/typebox";
-import { createSelectSchema } from "drizzle-typebox";
+import { createInsertSchema, createSelectSchema } from "drizzle-typebox";
 import {
   createdAtColumn,
   nanoidIdColumn,
@@ -18,13 +18,14 @@ export const todosTable = pgTable("todos", {
 export const TodoSchema = createSelectSchema(todosTable);
 // for post request: only content is required, completed is optional, extra fields are ignored
 // for put request: all fields are optional, but if provided, they must match the schema
-export const InsertTodoSchema = Type.Object({
+// export const TodoInsertSchema = createInsertSchema(todosTable);
+export const TodoInsertSchema = Type.Object({
   content: Type.String(),
   completed: Type.Optional(Type.Boolean()),
 });
-export const UpdateTodoSchema = Type.Partial(InsertTodoSchema);
+// export const UpdateTodoSchema = Type.Partial(InsertTodoSchema);
 
 // Types based on the TypeBox schemas
 export type Todo = Static<typeof TodoSchema>;
-export type NewTodo = Static<typeof InsertTodoSchema>;
-export type UpdateTodo = Static<typeof UpdateTodoSchema>;
+export type NewTodo = Static<typeof TodoInsertSchema>;
+export type UpdateTodo = Static<typeof TodoInsertSchema>;
