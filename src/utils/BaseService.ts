@@ -22,26 +22,7 @@ export abstract class BaseService {
       this.db = await db(); // Initialize db instance
     }
   }
-  protected async handleErrors<U>(method: ServiceMethod<U>): Promise<U> {
-    try {
-      // Make sure db is initialized before accessing it
-      if (!this.db) {
-        throw new Error("Database is not initialized");
-      }
-      console.log("ttt");
-      return await method();
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        throw new ValidationError("Validation failed", error);
-      }
-      if (error instanceof NotFoundError) {
-        console.log("aaa");
-        throw error;
-      }
-      console.error("Unexpected error:", error);
-      throw new DatabaseError("An unexpected database error occurred");
-    }
-  }
+
   protected validate<T extends TSchema>(schema: T, obj: unknown): Static<T> {
     // Create a new object with only the properties defined in the schema
     const cleanedObj: Partial<Static<T>> = {};

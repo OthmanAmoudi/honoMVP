@@ -13,7 +13,7 @@ export default class GeneralController extends BaseController {
     super();
   }
 
-  @Get("/")
+  @Get("")
   async fff(c: Context) {
     console.log("General controller reached");
     const todos = await this.todoService.getAll();

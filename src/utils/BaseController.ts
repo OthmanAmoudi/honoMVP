@@ -6,83 +6,57 @@ export abstract class BaseController {
   protected service: any;
 
   constructor() {
-    // No parameters and no assignments needed
+    this.getAll = this.getAll.bind(this);
+    this.getById = this.getById.bind(this);
+    this.create = this.create.bind(this);
+    this.update = this.update.bind(this);
+    this.delete = this.delete.bind(this);
   }
 
-  protected async handleResponse(
-    c: Context,
-    action: () => Promise<Response>
-  ): Promise<Response> {
-    try {
-      return await action();
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        return c.json({ error: error.message, details: error.details }, 400);
-      } else if (error instanceof NotFoundError) {
-        return c.json({ error: error.message }, 404);
-      } else if (error instanceof DatabaseError) {
-        return c.json({ error: "A database error occurred" }, 500);
-      } else {
-        console.error("Unhandled error:", error);
-        return c.json({ error: "An unexpected error occurred" }, 500);
-      }
+  public async getAll(c: Context): Promise<Response> {
+    // Extract cursor and limit from query parameters
+    let cursor: string | number | undefined = c.req.query("cursor");
+    // If cursor can be converted to a number, convert it; otherwise, keep it as a string or undefined
+    if (cursor && !isNaN(Number(cursor))) {
+      cursor = Number(cursor);
     }
+    // Extract limit and ensure it doesn't exceed 12, defaulting to 10 if not provided
+    let limit = c.req.query("limit") ? Number(c.req.query("limit")) : 10;
+    if (limit > 14) {
+      limit = 14;
+    }
+    const items = await this.service.getAll(cursor, limit);
+    return c.json({
+      items,
+      nextCursor: items.length === limit ? items[items.length - 1].id : null,
+    });
   }
 
-  getAll = async (c: Context) => {
-    return this.handleResponse(c, async () => {
-      // Extract cursor and limit from query parameters
-      let cursor: string | number | undefined = c.req.query("cursor");
-      // If cursor can be converted to a number, convert it; otherwise, keep it as a string or undefined
-      if (cursor && !isNaN(Number(cursor))) {
-        cursor = Number(cursor);
-      }
-      // Extract limit and ensure it doesn't exceed 12, defaulting to 10 if not provided
-      let limit = c.req.query("limit") ? Number(c.req.query("limit")) : 10;
-      if (limit > 14) {
-        limit = 14;
-      }
-      const items = await this.service.getAll(cursor, limit);
-      return c.json({
-        items,
-        nextCursor: items.length === limit ? items[items.length - 1].id : null,
-      });
-    });
-  };
+  public async getById(c: Context): Promise<Response> {
+    const id = c.req.param("id");
+    const item = await this.service.getById(id);
+    return c.json(item);
+  }
 
-  getById = async (c: Context) => {
-    return this.handleResponse(c, async () => {
-      const id = c.req.param("id");
-      const item = await this.service.getById(id);
-      return c.json(item);
-    });
-  };
+  public async create(c: Context): Promise<Response> {
+    const data = await c.req.json();
+    const newItem = await this.service.create(data);
+    return c.json(newItem, 201);
+  }
 
-  create = async (c: Context) => {
-    return this.handleResponse(c, async () => {
-      const data = await c.req.json();
-      const newItem = await this.service.create(data);
-      return c.json(newItem, 201);
-    });
-  };
+  public async update(c: Context): Promise<Response> {
+    const id = c.req.param("id");
+    const data = await c.req.json();
+    const updatedItem = await this.service.update(id, data);
+    return c.json(updatedItem);
+  }
 
-  update = async (c: Context) => {
-    return this.handleResponse(c, async () => {
-      const id = c.req.param("id");
-      const data = await c.req.json();
-      const updatedItem = await this.service.update(id, data);
-      return c.json(updatedItem);
-    });
-  };
-
-  delete = async (c: Context) => {
-    return this.handleResponse(c, async () => {
-      const id = c.req.param("id");
-      await this.service.delete(id);
-      c.status(204);
-      return c.body(null);
-    });
-  };
+  public async delete(c: Context): Promise<Response> {
+    const id = c.req.param("id");
+    await this.service.delete(id);
+    c.status(204);
+    return c.body(null);
+  }
   getExtraRoutes(): {
     method: string;
     path: string;

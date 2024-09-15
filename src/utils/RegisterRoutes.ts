@@ -6,6 +6,7 @@ import { printBootInfo } from "./BootLogger";
 
 import { db } from "../db/singletonDBInstance"; // Assume this returns Promise<PostgresJsDatabase>
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { NotFoundError, ValidationError, withErrorHandler } from "./Errors";
 
 export class ServiceResolver {
   private static dbInstance: PostgresJsDatabase;
@@ -69,7 +70,7 @@ class RouteHandler {
       const routeRouter = new Hono();
 
       this.applyMiddlewares(routeRouter, middlewares);
-      const additionalServices = this.getAdditionalServices(controllerInstance);
+      // const additionalServices = this.getAdditionalServices(controllerInstance);
 
       // Ensure these methods are async and awaited
       await this.setupExtraRoutes(
@@ -77,8 +78,8 @@ class RouteHandler {
         controllerInstance,
         fullPath,
         ControllerClass,
-        services.map((s) => s.constructor.name),
-        additionalServices
+        services.map((s) => s.constructor.name)
+        // additionalServices
       );
 
       if (standardRoutes) {
@@ -87,8 +88,8 @@ class RouteHandler {
           controllerInstance,
           fullPath,
           ControllerClass,
-          services.map((s) => s.constructor.name),
-          additionalServices
+          services.map((s) => s.constructor.name)
+          // additionalServices
         );
       }
 
@@ -117,22 +118,22 @@ class RouteHandler {
     }
   }
 
-  private getAdditionalServices(controllerInstance: any): string[] {
-    return Object.entries(controllerInstance)
-      .filter(
-        ([key, value]) =>
-          key.toLowerCase().includes("service") && typeof value === "object"
-      )
-      .map(([key]) => key);
-  }
+  // private getAdditionalServices(controllerInstance: any): string[] {
+  //   return Object.entries(controllerInstance)
+  //     .filter(
+  //       ([key, value]) =>
+  //         key.toLowerCase().includes("service") && typeof value === "object"
+  //     )
+  //     .map(([key]) => key);
+  // }
 
   private async setupExtraRoutes(
     routeRouter: Hono,
     controllerInstance: any,
     fullPath: string,
     ControllerClass: new (...args: any[]) => any,
-    ServiceClass: any,
-    additionalServices: string[]
+    ServiceClass: any
+    // additionalServices: string[]
   ) {
     const extraRoutes = controllerInstance.getExtraRoutes();
     extraRoutes.forEach(
@@ -170,7 +171,7 @@ class RouteHandler {
             .join(this.globalPrefix, fullPath, routePath)
             .replace(/\\/g, "/"),
           controller: ControllerClass.name,
-          services: [...serviceNames, ...additionalServices].filter(Boolean),
+          services: [...serviceNames].filter(Boolean),
           middlewares: routeMiddlewares.map((mw) => this.getFuncName(mw)),
           methods: [method.toUpperCase()],
           handler: handlerName,
@@ -184,33 +185,58 @@ class RouteHandler {
     controllerInstance: any,
     fullPath: string,
     ControllerClass: new (...args: any[]) => any,
-    serviceNames: string[],
-    additionalServices: string[]
+    serviceNames: string[]
   ): Promise<void> {
+    const proto = Object.getPrototypeOf(controllerInstance);
+
     const standardRoutesInfo = [
-      { path: "", method: "GET", handlerName: "getAll" },
-      { path: "", method: "POST", handlerName: "create" },
-      { path: "/:id", method: "GET", handlerName: "getById" },
-      { path: "/:id", method: "PUT", handlerName: "update" },
-      { path: "/:id", method: "DELETE", handlerName: "delete" },
+      { defaultPath: "", defaultMethod: "GET", handlerName: "getAll" },
+      { defaultPath: "", defaultMethod: "POST", handlerName: "create" },
+      { defaultPath: "/:id", defaultMethod: "GET", handlerName: "getById" },
+      { defaultPath: "/:id", defaultMethod: "PUT", handlerName: "update" },
+      { defaultPath: "/:id", defaultMethod: "DELETE", handlerName: "delete" },
     ];
 
-    standardRoutesInfo.forEach(({ path: routePath, method, handlerName }) => {
-      const handler = controllerInstance[handlerName];
-      if (typeof handler === "function") {
-        (routeRouter as any)[method.toLowerCase()](routePath, handler);
-        this.bootInfo.push({
-          path: path
-            .join(this.globalPrefix, fullPath, routePath)
-            .replace(/\\/g, "/"),
-          controller: ControllerClass.name,
-          services: [...serviceNames, ...additionalServices].filter(Boolean),
-          middlewares: [],
-          methods: [method],
-          handler: handler.name,
-        });
+    standardRoutesInfo.forEach(
+      ({ defaultPath, defaultMethod, handlerName }) => {
+        const handler = controllerInstance[handlerName];
+        if (typeof handler === "function") {
+          const methodMetadata =
+            Reflect.getMetadata("method", proto, handlerName) || defaultMethod;
+          const pathMetadata =
+            Reflect.getMetadata("path", proto, handlerName) || defaultPath;
+          const middlewares =
+            Reflect.getMetadata("middlewares", proto, handlerName) || [];
+
+          // Bind the handler if necessary
+          const routeHandler = handler.bind(controllerInstance);
+
+          if (middlewares.length > 0) {
+            (routeRouter as any)[methodMetadata.toLowerCase()](
+              pathMetadata,
+              ...middlewares,
+              routeHandler
+            );
+          } else {
+            (routeRouter as any)[methodMetadata.toLowerCase()](
+              pathMetadata,
+              routeHandler
+            );
+          }
+
+          this.bootInfo.push({
+            path: path
+              .join(this.globalPrefix, fullPath, pathMetadata)
+              .replace(/\\/g, "/"),
+            controller: ControllerClass.name,
+            services: [...serviceNames].filter(Boolean),
+            middlewares: middlewares.map((mw: any) => this.getFuncName(mw)),
+            methods: [methodMetadata.toUpperCase()],
+            handler: handlerName, // Use handlerName instead of handler.name
+          });
+        }
       }
-    });
+    );
   }
 
   private getFuncName(func: Function | object): string {
@@ -264,5 +290,10 @@ export async function setupRoutes(
   prefix: { prefix: string }
 ): Promise<RouteInfo[]> {
   const registrar = new RouteRegistrar(app, routesConfig, prefix);
+  app.onError((err, c) => {
+    console.error("Error occurred:");
+    withErrorHandler(err, c);
+    return c.json({ error: "An unexpected error occurred" }, 500);
+  });
   return await registrar.register();
 }
