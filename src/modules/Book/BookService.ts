@@ -62,4 +62,7 @@ export default class BookService extends BaseService {
       throw new NotFoundError("Resource Book with id " + id + " not found");
     }
   }
+  async khr(id: string) {
+    return "khr";
+  }
 }

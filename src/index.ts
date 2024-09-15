@@ -3,7 +3,6 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { setupRoutes } from "./utils/RegisterRoutes";
 import routesConfig from "./routes";
-import { loggingMiddleware } from "./middlewares/AuthMiddleware";
 import { logger } from "hono/logger";
 
 const app = new Hono();

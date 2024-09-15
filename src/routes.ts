@@ -27,7 +27,7 @@ const routeConfig: RouteConfig[] = [
   {
     path: "books",
     controller: BookController,
-    standardRoutes: true,
+    // standardRoutes: false,
   },
 ];
 export default routeConfig;

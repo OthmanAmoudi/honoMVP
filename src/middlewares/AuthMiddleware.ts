@@ -1,14 +1,15 @@
 import { Context, Next } from "hono";
 
 // Example Middleware Function
-export const loggingMiddleware = async (c: Context, next: Next) => {
-  // Log request information
-  const { method, url, header } = c.req;
-  const userAgent = c.req.header("User-Agent");
-  const timestamp = new Date().toISOString();
+export const loggingMiddleware =
+  (message: string) => async (c: Context, next: Next) => {
+    // Log request information
+    const { method, url, header } = c.req;
+    const userAgent = c.req.header("User-Agent");
+    const timestamp = new Date().toISOString();
+    console.log(message);
+    console.log(`[${timestamp}] ${method} ${url} from ${userAgent} ${message}`);
 
-  console.log(`[${timestamp}] ${method} ${url} from ${userAgent}`);
-
-  // Proceed to the next middleware or route handler
-  await next();
-};
+    // Proceed to the next middleware or route handler
+    await next();
+  };

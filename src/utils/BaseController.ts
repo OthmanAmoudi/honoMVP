@@ -1,6 +1,5 @@
 // src/controllers/BaseController.ts
 import { Context } from "hono";
-import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
 
 export abstract class BaseController {
   protected service: any;
@@ -76,7 +75,6 @@ export abstract class BaseController {
             "update",
             "delete",
             "getExtraRoutes",
-            "handleResponse",
           ].includes(name)
       )
       .map((name) => {

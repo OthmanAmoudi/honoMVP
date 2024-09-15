@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { Context } from "hono";
 
 // Convenience decorators for common HTTP methods
-export function Get(path: string) {
+export function Get(path: string = "") {
   return function (
     target: any,
     propertyKey: string,
@@ -29,7 +29,7 @@ export function Get(path: string) {
     );
   };
 }
-export function Post(path: string) {
+export function Post(path: string = "") {
   return function (
     target: any,
     propertyKey: string,
@@ -57,7 +57,7 @@ export function Post(path: string) {
   };
 }
 
-export function Put(path: string) {
+export function Put(path: string = "") {
   return function (
     target: any,
     propertyKey: string,
@@ -85,7 +85,7 @@ export function Put(path: string) {
   };
 }
 
-export function Patch(path: string) {
+export function Patch(path: string = "") {
   return function (
     target: any,
     propertyKey: string,
@@ -112,7 +112,7 @@ export function Patch(path: string) {
     );
   };
 }
-export function Delete(path: string) {
+export function Delete(path: string = "") {
   return function (
     target: any,
     propertyKey: string,
@@ -139,7 +139,7 @@ export function Delete(path: string) {
     );
   };
 }
-export function Use(middleware: any) {
+export function Use(middleware: Function | Function[]) {
   return function (
     target: any,
     propertyKey: string,
@@ -153,7 +153,10 @@ export function Use(middleware: any) {
       ) || [];
     Reflect.defineMetadata(
       "middlewares",
-      [...existingMiddlewares, middleware],
+      [
+        ...existingMiddlewares,
+        ...(Array.isArray(middleware) ? middleware : [middleware]),
+      ],
       target.constructor.prototype,
       propertyKey
     );
