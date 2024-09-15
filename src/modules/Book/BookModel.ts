@@ -1,4 +1,4 @@
-
+// src/modules/Book/BookModel.ts
 import { text, pgTable } from "drizzle-orm/pg-core";
 
 import {

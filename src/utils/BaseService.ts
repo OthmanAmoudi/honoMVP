@@ -1,27 +1,11 @@
 // src/services/BaseService.ts
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { db } from "../db/singletonDBInstance";
-import {
-  ValidationError,
-  NotFoundError,
-  DatabaseError,
-  ServiceMethod,
-} from "./";
+import { ValidationError } from "./";
 import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 
 export abstract class BaseService {
-  protected db: PostgresJsDatabase;
-
-  constructor(db: PostgresJsDatabase) {
-    this.db = db;
-  }
-
-  private async initDb() {
-    if (!this.db) {
-      this.db = await db(); // Initialize db instance
-    }
-  }
+  constructor(public readonly db: PostgresJsDatabase) {}
 
   protected validate<T extends TSchema>(schema: T, obj: unknown): Static<T> {
     // Create a new object with only the properties defined in the schema
@@ -32,7 +16,6 @@ export abstract class BaseService {
         cleanedObj[key as keyof Static<T>] = obj[key as keyof typeof obj];
       }
     }
-
     const C = TypeCompiler.Compile(schema);
     if (C.Check(cleanedObj)) {
       return cleanedObj as Static<T>;

@@ -1,38 +1,37 @@
+// src/db/singletonDBInstance.ts
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
-class DatabaseSingleton {
-  private static instance: Promise<PostgresJsDatabase> | null = null;
+let dbInstancePromise: Promise<PostgresJsDatabase> | null = null;
 
-  private constructor() {}
-
-  public static async getInstance(): Promise<PostgresJsDatabase> {
-    if (!DatabaseSingleton.instance) {
-      DatabaseSingleton.instance = (async () => {
-        try {
-          const pgClient = postgres({
-            host: process.env.PG_HOST,
-            port: Number(process.env.PG_PORT),
-            database: process.env.PG_DATABASE,
-            username: process.env.PG_USERNAME,
-            password: process.env.PG_PASSWORD,
-          });
-
-          // Attempt a simple query to check connection status
-          await pgClient`SELECT 1`;
-          const db = drizzle(pgClient);
-          console.log(
-            `PG Database '${process.env.PG_DATABASE}' connected successfully`
-          );
-          return db;
-        } catch (error) {
-          console.error("Failed to connect to PostgreSQL:", error);
-          throw new Error("PostgreSQL connection failed");
-        }
-      })();
-    }
-    return DatabaseSingleton.instance;
+export async function db(): Promise<PostgresJsDatabase> {
+  if (dbInstancePromise) {
+    return dbInstancePromise;
   }
+
+  dbInstancePromise = (async () => {
+    try {
+      const pgClient = postgres({
+        host: process.env.PG_HOST,
+        port: Number(process.env.PG_PORT),
+        database: process.env.PG_DATABASE,
+        username: process.env.PG_USERNAME,
+        password: process.env.PG_PASSWORD,
+      });
+
+      // Attempt a simple query to check connection status
+      await pgClient`SELECT 1`;
+      const db = drizzle(pgClient);
+      console.log(
+        `PG Database '${process.env.PG_DATABASE}' connected successfully`
+      );
+      return db;
+    } catch (error) {
+      console.error("Failed to connect to PostgreSQL:", error);
+      throw new Error("PostgreSQL connection failed");
+    }
+  })();
+
+  return dbInstancePromise;
 }
-export const db = () => DatabaseSingleton.getInstance();

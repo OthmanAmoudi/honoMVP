@@ -31,3 +31,22 @@ export interface RouteInfo {
   methods: string[];
   handler: string;
 }
+export interface Controller {
+  service?: any;
+  getExtraRoutes?(): ExtraRoute[];
+  // Define other standard methods if necessary
+  getAll?(c: Context): Promise<any>;
+  create?(c: Context): Promise<any>;
+  getById?(c: Context): Promise<any>;
+  update?(c: Context): Promise<any>;
+  delete?(c: Context): Promise<any>;
+}
+
+export interface ExtraRoute {
+  method: string;
+  path: string;
+  handler: (c: Context) => Promise<any>;
+  handlerName: string;
+  middlewares?: MiddlewareHandler[];
+  serviceNames?: string[];
+}
