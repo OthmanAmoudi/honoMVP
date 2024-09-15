@@ -6,19 +6,19 @@ import { logger } from "hono/logger";
 import { loggingMiddleware } from "../../middlewares/AuthMiddleware";
 import TodoService from "../Todo/TodoService";
 
-export default class GeneralController extends BaseController {
+export default class GeneralController extends BaseController<TodoService> {
   static services = [TodoService];
 
   constructor(public todoService: TodoService) {
-    super();
+    super(todoService);
   }
 
   @Get("")
-  async fff(c: Context) {
-    console.log("General controller reached");
+  async eee(c: Context) {
+    console.log("General / controller reached");
     const todos = await this.todoService.getAll();
     // console.log({ todos });
-    return c.json(todos);
+    return c.json({ todos });
     return c.json({
       notes: [
         { id: 1, content: "fff 1" },
@@ -40,7 +40,7 @@ export default class GeneralController extends BaseController {
   }
 
   @Get("/general")
-  @Use(loggingMiddleware)
+  @Use(loggingMiddleware())
   @Use(logger())
   async xxx(c: Context) {
     console.log("General controller reached");
@@ -55,6 +55,8 @@ export default class GeneralController extends BaseController {
 
   @Get("/general2")
   async bbb(c: Context) {
+    console.log("General2 controller reached");
+
     return c.json({
       todos: [
         { id: 1, content: "ddddd" },
