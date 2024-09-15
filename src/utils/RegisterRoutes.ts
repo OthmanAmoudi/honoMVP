@@ -6,7 +6,7 @@ import { printBootInfo } from "./BootLogger";
 
 import { db } from "../db/singletonDBInstance"; // Assume this returns Promise<PostgresJsDatabase>
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { NotFoundError, ValidationError, withErrorHandler } from "./Errors";
+import { withErrorHandler } from "./Errors";
 
 export class ServiceResolver {
   private static dbInstance: PostgresJsDatabase;
