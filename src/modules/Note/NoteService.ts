@@ -9,11 +9,7 @@ import {
   UpdateNote,
   Note,
 } from "./NoteModel";
-export default class NoteService extends BaseService<
-  Note,
-  typeof InsertNoteSchema,
-  typeof UpdateNoteSchema
-> {
+export default class NoteService extends BaseService {
   async getAll(cursor?: string, limit: number = 3): Promise<Note[]> {
     return await this.db
       .select()

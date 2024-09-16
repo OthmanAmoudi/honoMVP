@@ -75,10 +75,10 @@ function generateController(moduleName, modulePath) {
 import { BaseController } from "../../utils/BaseController";
 import ${moduleName}Service from "./${moduleName}Service";
 
-export default class ${moduleName}Controller extends BaseController {
+export default class ${moduleName}Controller extends BaseController<${moduleName}Service> {
   static services = [${moduleName}Service];
   constructor(public ${moduleName.toLowerCase()}Service: ${moduleName}Service) {
-    super();
+    super(${moduleName.toLowerCase()}Service);
   }
 }
 `;

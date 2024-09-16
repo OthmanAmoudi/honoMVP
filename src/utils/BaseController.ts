@@ -7,12 +7,10 @@ import { withErrorHandler } from "../utils/errors";
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 14;
 
-export abstract class BaseController<
-  TService extends BaseService<any, any, any>
-> {
-  protected service: TService;
+export abstract class BaseController {
+  protected service: any;
 
-  constructor(service: TService) {
+  constructor(service: any) {
     this.service = service;
     // Bind and wrap methods with error handling
     this.getAll = this.handleErrors(this.getAll.bind(this));
@@ -83,35 +81,37 @@ export abstract class BaseController<
       limit = MAX_LIMIT;
     }
 
-    const items = await this.service.getAll(cursor, limit);
+    const items = await this.service.getAll?.(cursor, limit);
     const nextCursor =
-      items.length === limit ? (items[items.length - 1] as any).id : null;
+      items && items.length === limit
+        ? (items[items.length - 1] as any).id
+        : null;
 
     return c.json({ items, nextCursor });
   }
 
   async getById(c: Context): Promise<Response> {
     const id = c.req.param("id");
-    const item = await this.service.getById(id);
+    const item = await this.service.getById?.(id);
     return c.json(item);
   }
 
   async create(c: Context): Promise<Response> {
     const data = await c.req.json();
-    const newItem = await this.service.create(data);
+    const newItem = await this.service.create?.(data);
     return c.json(newItem, 201);
   }
 
   async update(c: Context): Promise<Response> {
     const id = c.req.param("id");
     const data = await c.req.json();
-    const updatedItem = await this.service.update(id, data);
+    const updatedItem = await this.service.update?.(id, data);
     return c.json(updatedItem);
   }
 
   async delete(c: Context): Promise<Response> {
     const id = c.req.param("id");
-    await this.service.delete(id);
+    await this.service.delete?.(id);
     return c.body(null, 204);
   }
 

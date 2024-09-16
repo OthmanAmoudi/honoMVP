@@ -5,11 +5,7 @@ import { Static, TSchema } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import { Logger } from "../utils/Logger";
 
-export abstract class BaseService<
-  TModel extends object = object,
-  TCreateSchema extends TSchema = TSchema,
-  TUpdateSchema extends TSchema = TSchema
-> {
+export abstract class BaseService {
   constructor(public readonly db: PostgresJsDatabase) {}
 
   protected validate<T extends TSchema>(schema: T, obj: unknown): Static<T> {
@@ -51,33 +47,30 @@ export abstract class BaseService<
    * @param cursor Optional cursor for pagination.
    * @param limit Optional limit of items to retrieve.
    */
-  abstract getAll(cursor?: number | string, limit?: number): Promise<TModel[]>;
+  getAll?(cursor?: number | string, limit?: number): Promise<any[]>;
 
   /**
    * Retrieves a model by its ID.
    * @param id The ID of the model to retrieve.
    */
-  abstract getById(id: number | string): Promise<TModel>;
+  getById?(id: number | string): Promise<any>;
 
   /**
    * Creates a new model instance.
    * @param data The data to create the model with.
    */
-  abstract create(data: Static<TCreateSchema>): Promise<TModel>;
+  create?(data: any): Promise<any>;
 
   /**
    * Updates an existing model.
    * @param id The ID of the model to update.
    * @param data The data to update the model with.
    */
-  abstract update(
-    id: number | string,
-    data: Static<TUpdateSchema>
-  ): Promise<TModel>;
+  update?(id: number | string, data: any): Promise<any>;
 
   /**
    * Deletes a model by its ID.
    * @param id The ID of the model to delete.
    */
-  abstract delete(id: number | string): Promise<void>;
+  delete?(id: number | string): Promise<void>;
 }

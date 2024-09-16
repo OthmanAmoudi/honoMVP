@@ -5,6 +5,7 @@ import TodoController from "./modules/Todo/TodoController";
 import GeneralController from "./modules/General/GeneralController";
 
 import BookController from "./modules/Book/BookController";
+import UserController from "./modules/User/UserController";
 
 const routeConfig: RouteConfig[] = [
   // {
@@ -23,7 +24,11 @@ const routeConfig: RouteConfig[] = [
       },
     ],
   },
-
+  {
+    path: "users",
+    controller: UserController,
+    standardRoutes: false,
+  },
   // {
   //   path: "books",
   //   controller: BookController,
