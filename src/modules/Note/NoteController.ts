@@ -15,9 +15,9 @@ export default class NoteController extends BaseController<NoteService> {
     super(noteService);
   }
 
-  @Get("/xxx")
+  @Get("/")
   @Use(loggingMiddleware("***"))
-  async getAllNotes(c: Context) {
+  async getAll(c: Context) {
     const notes = {
       id: "1",
       content: "test",

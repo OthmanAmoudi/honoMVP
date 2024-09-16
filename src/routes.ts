@@ -7,10 +7,10 @@ import GeneralController from "./modules/General/GeneralController";
 import BookController from "./modules/Book/BookController";
 
 const routeConfig: RouteConfig[] = [
-  {
-    path: "todos",
-    controller: TodoController,
-  },
+  // {
+  //   path: "todos",
+  //   controller: TodoController,
+  // },
   {
     path: "notes",
     controller: NoteController,
@@ -19,15 +19,15 @@ const routeConfig: RouteConfig[] = [
       {
         path: "ooo",
         controller: GeneralController,
-        standardRoutes: false,
+        // standardRoutes: false,
       },
     ],
   },
 
-  {
-    path: "books",
-    controller: BookController,
-    // standardRoutes: false,
-  },
+  // {
+  //   path: "books",
+  //   controller: BookController,
+  //   // standardRoutes: false,
+  // },
 ];
 export default routeConfig;

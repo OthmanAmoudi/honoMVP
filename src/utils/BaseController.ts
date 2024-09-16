@@ -14,7 +14,6 @@ export abstract class BaseController<
 
   constructor(service: TService) {
     this.service = service;
-
     // Bind and wrap methods with error handling
     this.getAll = this.handleErrors(this.getAll.bind(this));
     this.getById = this.handleErrors(this.getById.bind(this));
@@ -73,7 +72,7 @@ export abstract class BaseController<
     });
   }
 
-  public async getAll(c: Context): Promise<Response> {
+  async getAll(c: Context): Promise<Response> {
     let cursor: string | number | undefined = c.req.query("cursor");
     if (cursor && !isNaN(Number(cursor))) {
       cursor = Number(cursor);
@@ -91,26 +90,26 @@ export abstract class BaseController<
     return c.json({ items, nextCursor });
   }
 
-  public async getById(c: Context): Promise<Response> {
+  async getById(c: Context): Promise<Response> {
     const id = c.req.param("id");
     const item = await this.service.getById(id);
     return c.json(item);
   }
 
-  public async create(c: Context): Promise<Response> {
+  async create(c: Context): Promise<Response> {
     const data = await c.req.json();
     const newItem = await this.service.create(data);
     return c.json(newItem, 201);
   }
 
-  public async update(c: Context): Promise<Response> {
+  async update(c: Context): Promise<Response> {
     const id = c.req.param("id");
     const data = await c.req.json();
     const updatedItem = await this.service.update(id, data);
     return c.json(updatedItem);
   }
 
-  public async delete(c: Context): Promise<Response> {
+  async delete(c: Context): Promise<Response> {
     const id = c.req.param("id");
     await this.service.delete(id);
     return c.body(null, 204);
@@ -126,22 +125,22 @@ export abstract class BaseController<
     const proto = Object.getPrototypeOf(this);
     const methodNames = Object.getOwnPropertyNames(proto);
 
-    const standardMethods = [
-      "constructor",
-      "getAll",
-      "getById",
-      "create",
-      "update",
-      "delete",
-      "getExtraRoutes",
-      "handleErrors",
-      "bindExtraRoutes",
-    ];
+    // const standardMethods = [
+    //   "constructor",
+    //   "getAll",
+    //   "getById",
+    //   "create",
+    //   "update",
+    //   "delete",
+    //   "getExtraRoutes",
+    //   "handleErrors",
+    //   "bindExtraRoutes",
+    // ];
 
     const extraRoutes = methodNames
       .filter(
         (name) =>
-          !standardMethods.includes(name) &&
+          // !standardMethods.includes(name) &&
           typeof (this as any)[name] === "function"
       )
       .map((name) => {

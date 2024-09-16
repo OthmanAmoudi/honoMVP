@@ -56,7 +56,6 @@ export function Post(path: string = "") {
     );
   };
 }
-
 export function Put(path: string = "") {
   return function (
     target: any,
@@ -84,7 +83,6 @@ export function Put(path: string = "") {
     );
   };
 }
-
 export function Patch(path: string = "") {
   return function (
     target: any,

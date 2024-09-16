@@ -1,11 +1,11 @@
 // src/utils/RegisterRoutes.ts
+import "reflect-metadata";
 import { Hono, Context, MiddlewareHandler } from "hono";
 import path from "node:path";
 import { RouteConfig, RouteInfo, Controller, ExtraRoute } from "./types";
 import { printBootInfo } from "./BootLogger";
 import { db } from "../db/singletonDBInstance";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import "reflect-metadata";
 import { withErrorHandler } from "./errors";
 
 // Add this interface
@@ -28,16 +28,18 @@ class RouteHandler {
   private router: Hono;
   private bootInfo: RouteInfo[];
   private globalPrefix: string;
+  private registeredRoutes: Set<string>;
 
   constructor(router: Hono, bootInfo: RouteInfo[], globalPrefix: string) {
     this.router = router;
     this.bootInfo = bootInfo;
     this.globalPrefix = globalPrefix;
+    this.registeredRoutes = new Set();
   }
 
   private joinPaths(...paths: string[]): string {
     return paths
-      .map((p) => p.replace(/^\/+|\/+$/g, "")) // Remove leading and trailing slashes
+      .map((p) => p.replace(/^\/+|\/+$/g, ""))
       .filter(Boolean)
       .join("/");
   }
@@ -55,41 +57,25 @@ class RouteHandler {
     const relativePath = "/" + fullPath;
 
     try {
-      // Resolve all required services
       const services = await ServiceResolver.resolveServices(ControllerClass);
-
-      // Instantiate the controller with all services
       const controllerInstance: Controller = new ControllerClass(...services);
 
-      // Automatically assign the main service to this.service if not set
       if (!controllerInstance.service && services.length > 0) {
         controllerInstance.service = services[0];
       }
 
       const routeRouter = new Hono();
-
       this.applyMiddlewares(routeRouter, middlewares);
 
-      // Ensure these methods are async and awaited
-      await this.setupExtraRoutes(
+      await this.setupControllerRoutes(
         routeRouter,
         controllerInstance,
         fullPath,
         ControllerClass,
-        services.map((s) => s.constructor.name)
+        services.map((s) => s.constructor.name),
+        standardRoutes
       );
 
-      if (standardRoutes) {
-        await this.setupStandardRoutes(
-          routeRouter,
-          controllerInstance,
-          fullPath,
-          ControllerClass,
-          services.map((s) => s.constructor.name)
-        );
-      }
-
-      // Process nested routes and await their setup
       for (const nestedRoute of nestedRoutes) {
         await this.setupRoute(nestedRoute, fullPath);
       }
@@ -113,117 +99,97 @@ class RouteHandler {
       router.use("*", middlewares);
     }
   }
-
-  private async setupExtraRoutes(
+  private async setupControllerRoutes(
     routeRouter: Hono,
     controllerInstance: Controller,
     fullPath: string,
     ControllerClass: new (...args: any[]) => Controller,
-    serviceNames: string[]
+    serviceNames: string[],
+    setupStandardRoutes: boolean
   ) {
     const extraRoutes: ExtraRoute[] =
       typeof controllerInstance.getExtraRoutes === "function"
         ? controllerInstance.getExtraRoutes()
         : [];
 
-    extraRoutes.forEach((route) => {
+    const allRoutes = [
+      ...extraRoutes,
+      ...(setupStandardRoutes
+        ? this.getStandardRoutes(controllerInstance)
+        : []),
+    ];
+
+    for (const route of allRoutes) {
       const {
         method,
-        path: extraPath,
+        path: routePath,
         handler,
         handlerName,
         middlewares: routeMiddlewares = [],
-        serviceNames: routeServiceNames = [],
       } = route;
 
-      const routeHandler = async (c: Context) => {
-        return await handler.call(controllerInstance, c);
-      };
+      const fullRoutePath = this.joinPaths(
+        this.globalPrefix,
+        fullPath,
+        routePath
+      );
+      const routeKey = `${method.toUpperCase()}:${fullRoutePath}`;
 
-      if (routeMiddlewares.length > 0) {
-        (routeRouter as any)[method.toLowerCase()](
-          extraPath,
-          ...routeMiddlewares,
-          routeHandler
-        );
-      } else {
-        (routeRouter as any)[method.toLowerCase()](extraPath, routeHandler);
-      }
-
-      this.bootInfo.push({
-        path: path
-          .join(this.globalPrefix, fullPath, extraPath)
-          .replace(/\\/g, "/"),
-        controller: ControllerClass.name,
-        services: [...serviceNames, ...routeServiceNames].filter(Boolean),
-        middlewares: routeMiddlewares.map((mw) => this.getFuncName(mw)),
-        methods: [method.toUpperCase()],
-        handler: handlerName,
-      });
-    });
-  }
-
-  private async setupStandardRoutes(
-    routeRouter: Hono,
-    controllerInstance: Controller,
-    fullPath: string,
-    ControllerClass: new (...args: any[]) => Controller,
-    serviceNames: string[]
-  ): Promise<void> {
-    const standardRoutesInfo = [
-      { defaultPath: "", defaultMethod: "GET", handlerName: "getAll" },
-      { defaultPath: "", defaultMethod: "POST", handlerName: "create" },
-      { defaultPath: "/:id", defaultMethod: "GET", handlerName: "getById" },
-      { defaultPath: "/:id", defaultMethod: "PUT", handlerName: "update" },
-      { defaultPath: "/:id", defaultMethod: "DELETE", handlerName: "delete" },
-    ];
-
-    for (const {
-      defaultPath,
-      defaultMethod,
-      handlerName,
-    } of standardRoutesInfo) {
-      const handler = (controllerInstance as any)[handlerName] as Function;
-      if (typeof handler === "function") {
-        const methodMetadata =
-          Reflect.getMetadata("method", controllerInstance, handlerName) ||
-          defaultMethod;
-        const pathMetadata =
-          Reflect.getMetadata("path", controllerInstance, handlerName) ||
-          defaultPath;
-        const middlewares =
-          Reflect.getMetadata("middlewares", controllerInstance, handlerName) ||
-          [];
+      if (!this.registeredRoutes.has(routeKey)) {
+        this.registeredRoutes.add(routeKey);
 
         const routeHandler = async (c: Context) => {
           return await handler.call(controllerInstance, c);
         };
 
-        if (middlewares.length > 0) {
-          (routeRouter as any)[methodMetadata.toLowerCase()](
-            pathMetadata,
-            ...middlewares,
+        if (routeMiddlewares.length > 0) {
+          (routeRouter as any)[method.toLowerCase()](
+            routePath,
+            ...routeMiddlewares,
             routeHandler
           );
         } else {
-          (routeRouter as any)[methodMetadata.toLowerCase()](
-            pathMetadata,
-            routeHandler
-          );
+          (routeRouter as any)[method.toLowerCase()](routePath, routeHandler);
         }
 
         this.bootInfo.push({
-          path: path
-            .join(this.globalPrefix, fullPath, pathMetadata)
-            .replace(/\\/g, "/"),
+          path: fullRoutePath,
           controller: ControllerClass.name,
-          services: serviceNames.filter(Boolean),
-          middlewares: middlewares.map((mw: any) => this.getFuncName(mw)),
-          methods: [methodMetadata.toUpperCase()],
+          services: serviceNames,
+          middlewares: routeMiddlewares.map((mw) => this.getFuncName(mw)),
+          methods: [method.toUpperCase()],
           handler: handlerName,
         });
       }
     }
+  }
+
+  private getStandardRoutes(controllerInstance: Controller): ExtraRoute[] {
+    const standardRoutes = [
+      { path: "", method: "GET", handlerName: "getAll" },
+      { path: "", method: "POST", handlerName: "create" },
+      { path: "/:id", method: "GET", handlerName: "getById" },
+      { path: "/:id", method: "PUT", handlerName: "update" },
+      { path: "/:id", method: "DELETE", handlerName: "delete" },
+    ];
+
+    return standardRoutes
+      .filter(
+        ({ handlerName }) =>
+          typeof (controllerInstance as any)[handlerName] === "function"
+      )
+      .map(({ path, method, handlerName }) => ({
+        method:
+          Reflect.getMetadata("method", controllerInstance, handlerName) ||
+          method,
+        path:
+          Reflect.getMetadata("path", controllerInstance, handlerName) || path,
+        handler: (controllerInstance as any)[handlerName],
+        handlerName,
+        middlewares:
+          Reflect.getMetadata("middlewares", controllerInstance, handlerName) ||
+          [],
+      }));
   }
 
   private getFuncName(func: Function | object): string {

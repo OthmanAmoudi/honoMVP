@@ -13,20 +13,19 @@ export default class GeneralController extends BaseController<TodoService> {
     super(todoService);
   }
 
-  @Get("")
-  async eee(c: Context) {
-    console.log("General / controller reached");
-    const todos = await this.todoService.getAll();
-    // console.log({ todos });
-    return c.json({ todos });
-    return c.json({
-      notes: [
-        { id: 1, content: "fff 1" },
-        { id: 2, content: "fff 2" },
-        { id: 3, content: "fff 3" },
-      ],
-    });
+  @Get("/mmm")
+  @Use(loggingMiddleware())
+  async getAll(c: Context) {
+    console.log("General -/- controller reached");
+    // const todos = await this.todoService.getAll();
+    return c.json({ getall3: "todos" });
   }
+
+  @Get("/:id")
+  override async getById(c: Context) {
+    return c.json({ x: "x" });
+  }
+
   @Get("/vvv")
   async vvv(c: Context) {
     console.log("General controller reached");
@@ -41,7 +40,6 @@ export default class GeneralController extends BaseController<TodoService> {
 
   @Get("/general")
   @Use(loggingMiddleware())
-  @Use(logger())
   async xxx(c: Context) {
     console.log("General controller reached");
     return c.json({

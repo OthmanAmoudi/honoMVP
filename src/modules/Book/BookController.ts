@@ -18,7 +18,7 @@ export default class BookController extends BaseController<BookService> {
 
   @Delete("/:id/:cid")
   @Use([loggingMiddleware("delete"), logger()])
-  async delete(c: Context) {
+  async delete2(c: Context) {
     return c.json({
       notes: [
         { id: 1, content: "fff 1" },
