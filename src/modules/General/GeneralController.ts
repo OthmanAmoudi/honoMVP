@@ -3,10 +3,10 @@ import { Context } from "hono";
 import { BaseController } from "../../utils/BaseController";
 import { Get, Use } from "../../utils/Decorators";
 import { logger } from "hono/logger";
-import { loggingMiddleware } from "../../middlewares/AuthMiddleware";
+import { loggingMiddleware } from "../../middlewares/LoggingMiddleware";
 import TodoService from "../Todo/TodoService";
 
-export default class GeneralController extends BaseController<TodoService> {
+export default class GeneralController extends BaseController {
   static services = [TodoService];
 
   constructor(public todoService: TodoService) {
@@ -21,8 +21,8 @@ export default class GeneralController extends BaseController<TodoService> {
     return c.json({ getall3: "todos" });
   }
 
-  @Get("/:id")
-  override async getById(c: Context) {
+  @Get("/:ivd")
+  async getById(c: Context) {
     return c.json({ x: "x" });
   }
 

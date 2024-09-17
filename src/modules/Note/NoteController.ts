@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { BaseController } from "../../utils/BaseController";
 import { Get, Use } from "../../utils/Decorators";
-import { loggingMiddleware } from "../../middlewares/AuthMiddleware";
+import { loggingMiddleware } from "../../middlewares/LoggingMiddleware";
 import NoteService from "./NoteService";
 import TodoService from "../Todo/TodoService";
 

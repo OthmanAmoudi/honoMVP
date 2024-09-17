@@ -1,3 +1,4 @@
+// src/modules/User/UserService.ts
 import { NotFoundError, BaseService } from "../../utils";
 import { eq, gt, asc } from "drizzle-orm";
 import {
@@ -10,15 +11,15 @@ import {
 } from "./UserModel";
 
 export default class UserService extends BaseService {
-  // async getAll(cursor?: string, limit: number = 8): Promise<User[]> {
-  //     const result = await this.db
-  //       .select()
-  //       .from(userTable)
-  //       .where(cursor ? gt(userTable.id, cursor) : undefined)
-  //       .limit(limit)
-  //       .orderBy(asc(userTable.id));
-  //     return result;
-  // }
+  async getAll(cursor?: string, limit: number = 8): Promise<User[]> {
+    const result = await this.db
+      .select()
+      .from(userTable)
+      .where(cursor ? gt(userTable.id, cursor) : undefined)
+      .limit(limit)
+      .orderBy(asc(userTable.id));
+    return result;
+  }
 
   async getById(id: string) {
     const result = await this.db

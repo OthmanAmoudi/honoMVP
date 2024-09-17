@@ -5,17 +5,22 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.12.0",
+    "bcrypt": "^5.1.1",
     "console-table-printer": "^2.12.1",
     "drizzle-orm": "^0.33.0",
-    "drizzle-typebox": "^0.1.1",
+    "drizzle-valibot": "^0.2.0",
     "hono": "^4.5.3",
+    "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.2",
     "nanoid": "^5.0.7",
     "postgres": "^3.4.4",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "valibot": "^0.42.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/better-sqlite3": "^7.6.11",
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.11.17",
     "drizzle-kit": "^0.23.0",
     "tsx": "^4.7.1"

@@ -1,7 +1,9 @@
+// src/modules/User/UserController.ts
 import { Context } from "hono";
-import { Get } from "../../utils";
+import { Get, Use } from "../../utils";
 import { BaseController } from "../../utils/BaseController";
 import UserService from "./UserService";
+import { loggingMiddleware } from "../../middlewares/LoggingMiddleware";
 
 export default class UserController extends BaseController {
   static services = [UserService];
@@ -9,8 +11,9 @@ export default class UserController extends BaseController {
     super(userService);
   }
 
-  @Get("/vas")
-  async vcv(c: Context) {
-    return c.json({ getall: "users" });
+  @Get("/")
+  @Use(loggingMiddleware())
+  async getCurrentUser(c: Context) {
+    return c.json({ get: "user" });
   }
 }

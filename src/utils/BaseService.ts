@@ -1,44 +1,23 @@
 // src/services/BaseService.ts
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { ValidationError } from "../utils/errors";
-import { Static, TSchema } from "@sinclair/typebox";
-import { TypeCompiler } from "@sinclair/typebox/compiler";
-import { Logger } from "../utils/Logger";
+import { BaseSchema, ValiError, parse } from "valibot";
 
 export abstract class BaseService {
   constructor(public readonly db: PostgresJsDatabase) {}
 
-  protected validate<T extends TSchema>(schema: T, obj: unknown): Static<T> {
-    // Create a new object with only the properties defined in the schema
-    const cleanedObj: Partial<Static<T>> = {};
-    for (const key in schema.properties) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        // @ts-ignore
-        cleanedObj[key as keyof Static<T>] = obj[key as keyof typeof obj];
+  protected validate<T>(schema: BaseSchema<unknown, T, any>, data: unknown): T {
+    try {
+      return parse(schema, data);
+    } catch (error) {
+      if (error instanceof ValiError) {
+        const validationErrors = error.issues.map((issue) => ({
+          path: issue.path?.map((p: { key: string }) => p.key).join("."),
+          message: issue.message,
+        }));
+        throw new ValidationError("Validation failed", validationErrors);
       }
-    }
-    const C = TypeCompiler.Compile(schema);
-    if (C.Check(cleanedObj)) {
-      return cleanedObj as Static<T>;
-    } else {
-      const errors: string[] = [];
-      // Collect and format errors into a more readable structure
-      for (const error of C.Errors(cleanedObj)) {
-        const { path, message, value } = error;
-        errors.push(
-          `Validation Error` +
-            ` At: ${
-              Array.isArray(path) ? path.join(".") : path || "(root)"
-            }\n` +
-            ` Issue: ${message}` +
-            ` got: (${value})`
-        );
-      }
-
-      // Optional: Logging the errors for debugging purposes
-      console.log("Validation Errors:\n", errors.join("\n\n"));
-
-      throw new ValidationError("Validation failed", errors);
+      throw error;
     }
   }
 

@@ -1,0 +1,34 @@
+POST http://localhost:3000/api/auth/register HTTP/1.1
+content-type: application/json
+
+{
+    "email": "test8@hotmail.com",
+    "password": "ssssssds",
+    "name": "test",
+    "SDFSDFSDF":"SDFSDFSDFS"
+}
+###
+POST http://localhost:3000/api/auth/login HTTP/1.1
+content-type: application/json
+
+{
+    "email": "test2@hotmail.com",
+    "password": "testtesttest"
+}
+###
+POST http://localhost:3000/api/auth/refresh-token HTTP/1.1
+content-type: application/json
+
+{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjT29seGM4VlhmcWFrNlZ0d2o5Qy0iLCJpYXQiOjE3MjY1MjMwNDgsImV4cCI6MTcyNzEyNzg0OH0.0HaFckCrMHJSSFJMoruFmi-TPii7o9xbMshErJXY58g"
+}
+###
+POST http://localhost:3000/api/auth/logout HTTP/1.1
+# content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJEWE9ockZGakY3R2tMbDc4Wl9CYXUiLCJpYXQiOjE3MjY1MjcwNjcsImV4cCI6MTcyNjUyNzk2N30.t5k937c_mYkCqpNCQabHvreLaN26lrznrqT878zR9jw
+
+###
+POST http://localhost:3000/api/auth/secret HTTP/1.1
+# content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJEWE9ockZGakY3R2tMbDc4Wl9CYXUiLCJpYXQiOjE3MjY1MjcwNjcsImV4cCI6MTcyNjUyNzk2N30.t5k937c_mYkCqpNCQabHvreLaN26lrznrqT878zR9jw
+

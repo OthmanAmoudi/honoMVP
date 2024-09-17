@@ -3,11 +3,11 @@ import { Context } from "hono";
 import { Delete, Get, Post, Use } from "../../utils";
 import { BaseController } from "../../utils/BaseController";
 import BookService from "./BookService";
-import { loggingMiddleware } from "../../middlewares/AuthMiddleware";
+import { loggingMiddleware } from "../../middlewares/LoggingMiddleware";
 import { logger } from "hono/logger";
 import TodoService from "../Todo/TodoService";
 
-export default class BookController extends BaseController<BookService> {
+export default class BookController extends BaseController {
   static services = [BookService, TodoService];
   constructor(
     public bookService: BookService,

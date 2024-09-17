@@ -1,15 +1,27 @@
+// src/middlewares/AuthMiddleware.ts
 import { Context, Next } from "hono";
+import jwt from "jsonwebtoken";
 
-// Example Middleware Function
-export const loggingMiddleware =
-  (message?: string) => async (c: Context, next: Next) => {
-    // Log request information
-    const { method, url, header } = c.req;
-    const userAgent = c.req.header("User-Agent");
-    const timestamp = new Date().toISOString();
-    console.log(message);
-    console.log(`[${timestamp}] ${method} ${url} from ${userAgent} ${message}`);
+const JWT_SECRET =
+  process.env.JWT_SECRET || "30fktdskd-=2-55725-630fkfldl;spd0t9";
 
-    // Proceed to the next middleware or route handler
-    await next();
+export const authMiddleware = () =>
+  async function authMiddleware() {
+    console.log("dd5dd");
+    return async (c: Context, next: Next) => {
+      console.log("sssssss");
+      const authHeader = c.req.header("Authorization");
+      if (!authHeader) {
+        return c.json({ error: "No token provided" }, 401);
+      }
+
+      const token = authHeader.split(" ")[1];
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+        c.set("userId", decoded.userId);
+        await next();
+      } catch (error) {
+        return c.json({ error: "Invalid token" }, 401);
+      }
+    };
   };

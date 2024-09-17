@@ -125,22 +125,22 @@ export abstract class BaseController {
     const proto = Object.getPrototypeOf(this);
     const methodNames = Object.getOwnPropertyNames(proto);
 
-    // const standardMethods = [
-    //   "constructor",
-    //   "getAll",
-    //   "getById",
-    //   "create",
-    //   "update",
-    //   "delete",
-    //   "getExtraRoutes",
-    //   "handleErrors",
-    //   "bindExtraRoutes",
-    // ];
+    const standardMethods = [
+      "constructor",
+      "getAll",
+      "getById",
+      "create",
+      "update",
+      "delete",
+      "getExtraRoutes",
+      "handleErrors",
+      "bindExtraRoutes",
+    ];
 
     const extraRoutes = methodNames
       .filter(
         (name) =>
-          // !standardMethods.includes(name) &&
+          !standardMethods.includes(name) &&
           typeof (this as any)[name] === "function"
       )
       .map((name) => {
