@@ -1,28 +1,51 @@
 // src/routes.ts
-import { logger } from "hono/logger";
 import { RouteConfig } from "./utils";
 import NoteController from "./modules/Note/NoteController";
 import TodoController from "./modules/Todo/TodoController";
+import GeneralController from "./modules/General/GeneralController";
+
+import BookController from "./modules/Book/BookController";
+import UserController from "./modules/User/UserController";
+import AuthController from "./modules/Auth/AuthController";
+
+import MangoController from "./modules/Mango/MangoController";
 
 const routeConfig: RouteConfig[] = [
+  // {
+  //   path: "todos",
+  //   controller: TodoController,
+  // },
+  // {
+  //   path: "notes",
+  //   controller: NoteController,
+  //   standardRoutes: true,
+  //   nestedRoutes: [
+  //     {
+  //       path: "ooo",
+  //       controller: GeneralController,
+  //       // standardRoutes: false,
+  //     },
+  //   ],
+  // },
   {
-    prefix: "/api",
-    path: "/todos",
-    controller: TodoController, // this controller by default has all the standard routes (getAll,getById,create,update,delete)
-    nestedRoutes: [
-      {
-        path: "/ooo",
-        controller: NoteController,
-        standardRoutes: true, // if false (getAll,getById,create,update,delete) will not be included
-        middlewares: logger(), // apply middleware for all routes
-      },
-    ],
+    path: "users",
+    controller: UserController,
+    // standardRoutes: false,
   },
+  // {
+  //   path: "books",
+  //   controller: BookController,
+  //   // standardRoutes: false,
+  // },
   {
-    path: "/notes",
-    controller: NoteController,
-    standardRoutes: true, // if false (getAll,getById,create,update,delete) will not be included
-    middlewares: logger(), // apply middleware for all routes
+    path: "auth",
+    controller: AuthController,
+    standardRoutes: false,
+  },
+
+  {
+    path: "mangos",
+    controller: MangoController,
   },
 ];
 export default routeConfig;
