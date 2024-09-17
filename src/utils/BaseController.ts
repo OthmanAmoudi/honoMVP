@@ -1,8 +1,8 @@
 // src/controllers/BaseController.ts
 import { Context } from "hono";
-import BaseService from "./BaseService";
+import { BaseService } from "./BaseService";
 import { ValidationError, NotFoundError, DatabaseError } from "./Errors";
-export default abstract class BaseController<T extends BaseService> {
+export abstract class BaseController<T extends BaseService> {
   constructor(protected service: T) {}
 
   protected async handleResponse(c: Context, action: () => Promise<any>) {
@@ -24,8 +24,22 @@ export default abstract class BaseController<T extends BaseService> {
   }
   getAll = async (c: Context) => {
     return this.handleResponse(c, async () => {
-      const items = await this.service.getAll();
-      return c.json(items);
+      // Extract cursor and limit from query parameters
+      let cursor: string | number | undefined = c.req.query("cursor");
+      // If cursor can be converted to a number, convert it; otherwise, keep it as a string or undefined
+      if (cursor && !isNaN(Number(cursor))) {
+        cursor = Number(cursor);
+      }
+      // Extract limit and ensure it doesn't exceed 12, defaulting to 10 if not provided
+      let limit = c.req.query("limit") ? Number(c.req.query("limit")) : 10;
+      if (limit > 14) {
+        limit = 14;
+      }
+      const items = await this.service.getAll(cursor, limit);
+      return c.json({
+        items,
+        nextCursor: items.length === limit ? items[items.length - 1].id : null,
+      });
     });
   };
 

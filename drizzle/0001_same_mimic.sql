@@ -1,0 +1,1 @@
+ALTER TABLE `todos` ADD `updatedAt` integer DEFAULT CURRENT_TIMESTAMP NOT NULL;

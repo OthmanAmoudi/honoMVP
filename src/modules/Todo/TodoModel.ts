@@ -1,19 +1,22 @@
-import { sql } from "drizzle-orm";
 import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 import { Static, Type } from "@sinclair/typebox";
-import { createInsertSchema, createSelectSchema } from "drizzle-typebox";
+import { createSelectSchema } from "drizzle-typebox";
+import {
+  createdAtColumn,
+  nanoidIdColumn,
+  updatedAtColumn,
+} from "../../db/customefields-sqlite";
 
 export const todosTable = sqliteTable("todos", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: nanoidIdColumn(),
   content: text("content").notNull(),
   completed: integer("completed", { mode: "boolean" }).notNull().default(false),
-  createdAt: integer("createdAt")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+  createdAt: createdAtColumn(),
+  updatedAt: updatedAtColumn(),
 });
 // Create TypeBox schemas for todos
 export const TodoSchema = createSelectSchema(todosTable);
-export const InsertTodoSchema = createInsertSchema(todosTable, {
+export const InsertTodoSchema = Type.Object({
   content: Type.String(),
   completed: Type.Optional(Type.Boolean()),
 });
