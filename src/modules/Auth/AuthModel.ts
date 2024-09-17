@@ -1,24 +1,24 @@
 // src/modules/Auth/AuthModel.ts
-import { text, pgTable, timestamp } from "drizzle-orm/pg-core";
+import { text, sqliteTable } from "drizzle-orm/sqlite-core";
 import {
   nanoidIdColumn,
   createdAtColumn,
   updatedAtColumn,
-} from "../../db/fields/customefields-postgresql";
+} from "../../db/fields/customefields-sqlite";
 import { createSelectSchema } from "drizzle-valibot";
 import { userTable } from "../User/UserModel";
 import * as v from "valibot";
 
-export const authTable = pgTable("auth", {
+export const authTable = sqliteTable("auth", {
   id: nanoidIdColumn(),
   userId: text("user_id")
     .notNull()
     .references(() => userTable.id),
   password: text("password").notNull(),
   refreshToken: text("refresh_token"),
-  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  refreshTokenExpiresAt: text("refresh_token_expires_at"),
   refreshTokenFamily: text("refresh_token_family"),
-  lastAuthentication: timestamp("last_authentication"),
+  lastAuthentication: text("last_authentication"),
   createdAt: createdAtColumn(),
   updatedAt: updatedAtColumn(),
 });

@@ -2,14 +2,15 @@ import {
   nanoidIdColumn,
   createdAtColumn,
   updatedAtColumn,
-} from "../../db/fields/customefields-postgresql";
+} from "../../db/fields/customefields-sqlite";
 import { createSelectSchema } from "drizzle-valibot";
-import { pgTable, text } from "drizzle-orm/pg-core";
+import { text } from "drizzle-orm/sqlite-core";
 import { userTable } from "../User/UserModel";
 import * as v from "valibot";
+import { sqliteTable } from "drizzle-orm/sqlite-core";
 
 // Example table that extends with common fields
-export const notesTable = pgTable("notes", {
+export const notesTable = sqliteTable("notes", {
   id: nanoidIdColumn(),
   description: text("description").notNull(),
   userId: text("user_id")

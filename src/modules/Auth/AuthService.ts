@@ -73,9 +73,10 @@ export default class AuthService extends BaseService {
       .update(authTable)
       .set({
         refreshToken: await bcrypt.hash(refreshToken, 10),
-        refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        refreshTokenExpiresAt:
+          "" + new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         refreshTokenFamily,
-        lastAuthentication: new Date(),
+        lastAuthentication: "" + new Date(),
       })
       .where(eq(authTable.userId, user.id));
 
@@ -104,13 +105,13 @@ export default class AuthService extends BaseService {
       if (
         !auth[0] ||
         !(await bcrypt.compare(oldRefreshToken, auth[0].refreshToken!)) ||
-        new Date() > auth[0].refreshTokenExpiresAt!
+        new Date() > new Date(auth[0].refreshTokenExpiresAt!)
       ) {
         throw new UnauthorizedError("Invalid refresh token");
       }
 
       if (
-        new Date().getTime() - auth[0].lastAuthentication!.getTime() >
+        new Date().getTime() - new Date(auth[0].lastAuthentication!).getTime() >
         this.FORCE_REAUTH_AFTER
       ) {
         throw new UnauthorizedError("Re-authentication required");
@@ -123,7 +124,8 @@ export default class AuthService extends BaseService {
         .update(authTable)
         .set({
           refreshToken: await bcrypt.hash(refreshToken, 10),
-          refreshTokenExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+          refreshTokenExpiresAt:
+            "" + new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         })
         .where(eq(authTable.userId, auth[0].userId));
 

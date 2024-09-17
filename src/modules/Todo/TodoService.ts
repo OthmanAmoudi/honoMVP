@@ -4,11 +4,7 @@ import { BaseService } from "../../utils/BaseService";
 import { Todo, NewTodo, todosTable, TodoInsertSchema } from "./TodoModel";
 import { NotFoundError } from "../../utils";
 
-export default class TodoService extends BaseService<
-  Todo,
-  typeof TodoInsertSchema,
-  typeof TodoInsertSchema
-> {
+export default class TodoService extends BaseService {
   async getAll(cursor?: string, limit: number = 3): Promise<Todo[]> {
     const result = await this.db
       .select()
@@ -35,6 +31,7 @@ export default class TodoService extends BaseService<
   async create(data: NewTodo): Promise<Todo> {
     // Validate the incoming request using TypeBox schema
     const cleanedData = this.validate(TodoInsertSchema, data);
+    console.log({ cleanedData });
     const result = await this.db
       .insert(todosTable)
       .values(cleanedData)

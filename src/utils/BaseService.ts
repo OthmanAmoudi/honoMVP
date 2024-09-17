@@ -1,10 +1,10 @@
 // src/services/BaseService.ts
-import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { ValidationError } from "../utils/errors";
 import { BaseSchema, ValiError, parse } from "valibot";
 
 export abstract class BaseService {
-  constructor(public readonly db: PostgresJsDatabase) {}
+  constructor(public readonly db: BetterSQLite3Database) {}
 
   protected validate<T>(schema: BaseSchema<unknown, T, any>, data: unknown): T {
     try {

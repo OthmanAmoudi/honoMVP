@@ -1,37 +1,19 @@
-// src/db/singletonDBInstance.ts
-import postgres from "postgres";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+// src/db/dbSingleton.ts
+import betterSqlite3 from "better-sqlite3";
+import { BetterSQLite3Database, drizzle } from "drizzle-orm/better-sqlite3";
 
-let dbInstancePromise: Promise<PostgresJsDatabase> | null = null;
+class DatabaseSingleton {
+  private static instance: BetterSQLite3Database;
 
-export async function db(): Promise<PostgresJsDatabase> {
-  if (dbInstancePromise) {
-    return dbInstancePromise;
-  }
+  private constructor() {}
 
-  dbInstancePromise = (async () => {
-    try {
-      const pgClient = postgres({
-        host: process.env.PG_HOST,
-        port: Number(process.env.PG_PORT),
-        database: process.env.PG_DATABASE,
-        username: process.env.PG_USERNAME,
-        password: process.env.PG_PASSWORD,
-      });
-
-      // Attempt a simple query to check connection status
-      await pgClient`SELECT 1`;
-      const db = drizzle(pgClient);
-      console.log(
-        `PG Database '${process.env.PG_DATABASE}' connected successfully`
-      );
-      return db;
-    } catch (error) {
-      console.error("Failed to connect to PostgreSQL:", error);
-      throw new Error("PostgreSQL connection failed");
+  public static getInstance() {
+    if (!DatabaseSingleton.instance) {
+      const sqliteInstance = new betterSqlite3("./sqlite.db"); // Replace with your DB connection logic
+      DatabaseSingleton.instance = drizzle(sqliteInstance);
     }
-  })();
-
-  return dbInstancePromise;
+    return DatabaseSingleton.instance;
+  }
 }
+
+export const db = DatabaseSingleton.getInstance();
