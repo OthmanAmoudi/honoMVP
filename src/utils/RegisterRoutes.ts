@@ -1,17 +1,16 @@
 // src/utils/RegisterRoutes.ts
 import "reflect-metadata";
 import { Hono, Context, MiddlewareHandler } from "hono";
-import path from "node:path";
 import { RouteConfig, RouteInfo, Controller, ExtraRoute } from "./types";
 import { printBootInfo } from "./BootLogger";
 import { db } from "../db/singletonDBInstance";
-import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { withErrorHandler } from "./errors";
+import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
 // Add this interface
 interface ControllerConstructor {
   new (...args: any[]): Controller;
-  services?: (new (db: PostgresJsDatabase) => any)[];
+  services?: (new (db: BetterSQLite3Database) => any)[];
 }
 
 class ServiceResolver {
@@ -19,7 +18,7 @@ class ServiceResolver {
     ControllerClass: ControllerConstructor
   ): Promise<any[]> {
     const serviceClasses = ControllerClass.services || [];
-    const dbInstance = await db();
+    const dbInstance = db;
     return serviceClasses.map((ServiceClass) => new ServiceClass(dbInstance));
   }
 }

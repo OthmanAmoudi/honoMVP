@@ -6,21 +6,21 @@ content-type: application/json
 
 {
     "content": "test",
-    "completed": false
+    "completed": 1
 }
 ###
-GET http://localhost:3000/api/todos/0gnNm1jXHbpnUjKdyK0MA HTTP/1.1
+GET http://localhost:3000/api/todos/Dax2n5PRUw_gvbBWtNses HTTP/1.1
 content-type: application/json
 ###
-PUT http://localhost:3000/api/todos/0gnNm1jXHbpnUjKdyK0MA HTTP/1.1
+PUT http://localhost:3000/api/todos/Dax2n5PRUw_gvbBWtNses HTTP/1.1
 content-type: application/json
 
 {
-    "content": "test4",
-    "completed": false
+    "content": "44343434343434",
+    "completed": 1
 }
 ###
-DELETE http://localhost:3000/api/todos/U7MwV4VJbsS1BiNGb7nFm HTTP/1.1
+DELETE http://localhost:3000/api/todos/Dax2n5PRUw_gvbBWtNses HTTP/1.1
 content-type: application/json
 ###
 GET http://localhost:3000/api/notes/xxx HTTP/1.1
@@ -36,6 +36,7 @@ POST http://localhost:3000/api/notes HTTP/1.1
 content-type: application/json
 
 {
+    "userId":"45lws04",
     "description": "test 22 2 2 2 2"
 }
 ###

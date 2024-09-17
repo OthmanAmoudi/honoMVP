@@ -5,7 +5,7 @@ import { loggingMiddleware } from "../../middlewares/LoggingMiddleware";
 import NoteService from "./NoteService";
 import TodoService from "../Todo/TodoService";
 
-export default class NoteController extends BaseController<NoteService> {
+export default class NoteController extends BaseController {
   static services = [NoteService, TodoService];
 
   constructor(

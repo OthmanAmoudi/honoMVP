@@ -1,14 +1,14 @@
 // src/modules/User/UserModel.ts
-import { text, pgTable } from "drizzle-orm/pg-core";
+import { text, sqliteTable } from "drizzle-orm/sqlite-core";
 import {
   nanoidIdColumn,
   createdAtColumn,
   updatedAtColumn,
-} from "../../db/fields/customefields-postgresql";
+} from "../../db/fields/customefields-sqlite";
 import { createSelectSchema } from "drizzle-valibot";
 import * as v from "valibot";
 
-export const userTable = pgTable("users", {
+export const userTable = sqliteTable("users", {
   id: nanoidIdColumn(),
   email: text("email").notNull().unique(),
   name: text("name"),

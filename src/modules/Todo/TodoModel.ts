@@ -3,14 +3,14 @@ import {
   createdAtColumn,
   nanoidIdColumn,
   updatedAtColumn,
-} from "../../db/fields/customefields-postgresql";
-import { pgTable, text, boolean } from "drizzle-orm/pg-core";
+} from "../../db/fields/customefields-sqlite";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import * as v from "valibot";
 
-export const todosTable = pgTable("todos", {
+export const todosTable = sqliteTable("todos", {
   id: nanoidIdColumn(),
   content: text("content").notNull(),
-  completed: boolean("completed").notNull().default(false),
+  completed: integer("completed").notNull().default(0),
   createdAt: createdAtColumn(),
   updatedAt: updatedAtColumn(),
 });
@@ -21,7 +21,7 @@ export const TodoSchema = createSelectSchema(todosTable);
 // export const TodoInsertSchema = createInsertSchema(todosTable);
 export const TodoInsertSchema = v.object({
   content: v.string(),
-  completed: v.optional(v.boolean()),
+  completed: v.optional(v.pipe(v.number(), v.minValue(0), v.maxValue(1))),
 });
 // export const UpdateTodoSchema = Type.Partial(InsertTodoSchema);
 

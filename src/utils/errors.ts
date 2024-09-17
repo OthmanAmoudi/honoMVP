@@ -13,7 +13,9 @@ export class ValidationError extends Error {
     super(message);
     this.name = "ValidationError";
     this.errors = errors;
-    Logger.warn(JSON.stringify(errors));
+    errors.forEach((e) =>
+      Logger.warn("property", e.path, "issues:", e.message)
+    );
   }
 }
 
