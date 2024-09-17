@@ -11,7 +11,7 @@ export function validateBody(schema: any) {
         c.req.valid = () => body;
         await next();
       } else {
-        return c.json({ error: result }, 400);
+        return c.json({ error: result.issues }, 400);
       }
     } catch (error) {
       return c.json({ error: result.issues }, 400);

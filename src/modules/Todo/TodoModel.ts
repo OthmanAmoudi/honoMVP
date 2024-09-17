@@ -1,11 +1,11 @@
-import { Static, Type } from "@sinclair/typebox";
-import { createInsertSchema, createSelectSchema } from "drizzle-typebox";
+import { createInsertSchema, createSelectSchema } from "drizzle-valibot";
 import {
   createdAtColumn,
   nanoidIdColumn,
   updatedAtColumn,
 } from "../../db/fields/customefields-postgresql";
 import { pgTable, text, boolean } from "drizzle-orm/pg-core";
+import * as v from "valibot";
 
 export const todosTable = pgTable("todos", {
   id: nanoidIdColumn(),
@@ -19,13 +19,13 @@ export const TodoSchema = createSelectSchema(todosTable);
 // for post request: only content is required, completed is optional, extra fields are ignored
 // for put request: all fields are optional, but if provided, they must match the schema
 // export const TodoInsertSchema = createInsertSchema(todosTable);
-export const TodoInsertSchema = Type.Object({
-  content: Type.String(),
-  completed: Type.Optional(Type.Boolean()),
+export const TodoInsertSchema = v.object({
+  content: v.string(),
+  completed: v.optional(v.boolean()),
 });
 // export const UpdateTodoSchema = Type.Partial(InsertTodoSchema);
 
 // Types based on the TypeBox schemas
-export type Todo = Static<typeof TodoSchema>;
-export type NewTodo = Static<typeof TodoInsertSchema>;
-export type UpdateTodo = Static<typeof TodoInsertSchema>;
+export type Todo = typeof TodoSchema;
+export type NewTodo = typeof TodoInsertSchema;
+export type UpdateTodo = typeof TodoInsertSchema;

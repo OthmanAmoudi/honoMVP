@@ -1,5 +1,5 @@
 // src/modules/Auth/AuthModel.ts
-import { text, pgTable } from "drizzle-orm/pg-core";
+import { text, pgTable, timestamp } from "drizzle-orm/pg-core";
 import {
   nanoidIdColumn,
   createdAtColumn,
@@ -16,6 +16,9 @@ export const authTable = pgTable("auth", {
     .references(() => userTable.id),
   password: text("password").notNull(),
   refreshToken: text("refresh_token"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  refreshTokenFamily: text("refresh_token_family"),
+  lastAuthentication: timestamp("last_authentication"),
   createdAt: createdAtColumn(),
   updatedAt: updatedAtColumn(),
 });

@@ -8,6 +8,8 @@ import BookController from "./modules/Book/BookController";
 import UserController from "./modules/User/UserController";
 import AuthController from "./modules/Auth/AuthController";
 
+import MangoController from "./modules/Mango/MangoController";
+
 const routeConfig: RouteConfig[] = [
   // {
   //   path: "todos",
@@ -39,6 +41,11 @@ const routeConfig: RouteConfig[] = [
     path: "auth",
     controller: AuthController,
     standardRoutes: false,
+  },
+
+  {
+    path: "mangos",
+    controller: MangoController,
   },
 ];
 export default routeConfig;

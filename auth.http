@@ -2,7 +2,7 @@ POST http://localhost:3000/api/auth/register HTTP/1.1
 content-type: application/json
 
 {
-    "email": "test8@hotmail.com",
+    "email": "test10@hotmail.com",
     "password": "ssssssds",
     "name": "test",
     "SDFSDFSDF":"SDFSDFSDFS"
@@ -12,23 +12,31 @@ POST http://localhost:3000/api/auth/login HTTP/1.1
 content-type: application/json
 
 {
-    "email": "test2@hotmail.com",
-    "password": "testtesttest"
+    "email": "test10@hotmail.com",
+    "password": "ssssssds"
 }
 ###
 POST http://localhost:3000/api/auth/refresh-token HTTP/1.1
 content-type: application/json
 
 {
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjT29seGM4VlhmcWFrNlZ0d2o5Qy0iLCJpYXQiOjE3MjY1MjMwNDgsImV4cCI6MTcyNzEyNzg0OH0.0HaFckCrMHJSSFJMoruFmi-TPii7o9xbMshErJXY58g"
+    "clientId":"0.14041922012574126",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ5bXdvREI5NUhXWGJvYW1XLU42djUiLCJjbGllbnRJZCI6IjAuMTQwNDE5MjIwMTI1NzQxMjYiLCJpYXQiOjE3MjY1NzU5NDMsImV4cCI6MTcyNzE4MDc0M30.P3XlaQGosL4GMVeqSESMka2Wg1D1B4phGPMbhLhxARw"
 }
 ###
 POST http://localhost:3000/api/auth/logout HTTP/1.1
 # content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJEWE9ockZGakY3R2tMbDc4Wl9CYXUiLCJpYXQiOjE3MjY1MjcwNjcsImV4cCI6MTcyNjUyNzk2N30.t5k937c_mYkCqpNCQabHvreLaN26lrznrqT878zR9jw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ5bXdvREI5NUhXWGJvYW1XLU42djUiLCJpYXQiOjE3MjY1Nzc1MDMsImV4cCI6MTcyNjU3ODQwM30.tkFnjrP19YnYaa9TI6X6ek-hK4rTat21himSxF4BcWg
 
 ###
 POST http://localhost:3000/api/auth/secret HTTP/1.1
 # content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJEWE9ockZGakY3R2tMbDc4Wl9CYXUiLCJpYXQiOjE3MjY1MjcwNjcsImV4cCI6MTcyNjUyNzk2N30.t5k937c_mYkCqpNCQabHvreLaN26lrznrqT878zR9jw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ5bXdvREI5NUhXWGJvYW1XLU42djUiLCJpYXQiOjE3MjY1Nzc1OTAsImV4cCI6MTcyNjU3ODQ5MH0.XJvMVt9GZqiU3k-8B1M-QOZBMsgdgxBaY_viL6_Uy9Y
 
+###
+POST http://localhost:3000/api/mangos HTTP/1.1
+content-type: application/json
+
+{
+    "description":"Mango"
+}

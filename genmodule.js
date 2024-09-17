@@ -53,7 +53,7 @@ function generateModule(moduleName, fileType) {
   for (const type of filesToGenerate) {
     switch (type) {
       case "controller":
-        generateController(moduleName, modulePath);
+        generateController(moduleName, modulePath, routesPath);
         break;
       case "service":
         generateService(moduleName, modulePath, dbType);
@@ -70,12 +70,12 @@ function generateModule(moduleName, fileType) {
   console.log(`Module ${moduleName} generated successfully.`);
 }
 
-function generateController(moduleName, modulePath) {
+function generateController(moduleName, modulePath, routesPath) {
   const controllerContent = `
 import { BaseController } from "../../utils/BaseController";
 import ${moduleName}Service from "./${moduleName}Service";
 
-export default class ${moduleName}Controller extends BaseController<${moduleName}Service> {
+export default class ${moduleName}Controller extends BaseController {
   static services = [${moduleName}Service];
   constructor(public ${moduleName.toLowerCase()}Service: ${moduleName}Service) {
     super(${moduleName.toLowerCase()}Service);
@@ -87,6 +87,22 @@ export default class ${moduleName}Controller extends BaseController<${moduleName
     controllerContent
   );
   console.log(`Generated ${moduleName}Controller.ts`);
+
+  // Update routes.ts
+  let routesContent = fs.readFileSync(routesPath, "utf8");
+  const newRoute = `
+   {
+     path: "${moduleName.toLowerCase()}s",
+     controller: ${moduleName}Controller,
+   },`;
+
+  routesContent = routesContent.replace(
+    "const routeConfig: RouteConfig[] = [",
+    `import ${moduleName}Controller from "./modules/${moduleName}/${moduleName}Controller";\n\nconst routeConfig: RouteConfig[] = [`
+  );
+  routesContent = routesContent.replace("];", `${newRoute}\n];`);
+
+  fs.writeFileSync(routesPath, routesContent);
 }
 
 function generateService(moduleName, modulePath, dbType) {
@@ -248,8 +264,8 @@ import {
   createdAtColumn,
   updatedAtColumn,
 } from "../../db/fields/customefields-${dbType}";
-import { createSelectSchema } from "drizzle-typebox";
-import { Static, Type } from "@sinclair/typebox";
+import { createSelectSchema } from "drizzle-valibot";
+import * as v from 'valibot'
 
 export const ${moduleName.toLowerCase()}Table = ${
     dbType === "postgresql"
@@ -266,15 +282,15 @@ export const ${moduleName.toLowerCase()}Table = ${
 });
 
 export const ${moduleName}Schema = createSelectSchema(${moduleName.toLowerCase()}Table);
-export const Insert${moduleName}Schema = Type.Object({
-  description: Type.String({ minLength: 2, maxLength: 50 }),
+export const Insert${moduleName}Schema = v.object({
+  description: v.pipe(v.string(),v.minLength(2), v.maxLength(50)),
   // Define insert schema
 });
 export const Update${moduleName}Schema = Insert${moduleName}Schema;
 
-export type ${moduleName} = Static<typeof ${moduleName}Schema>;
-export type New${moduleName} = Static<typeof Insert${moduleName}Schema>;
-export type Update${moduleName} = Static<typeof Update${moduleName}Schema>;
+export type ${moduleName} = typeof ${moduleName}Schema;
+export type New${moduleName} = typeof Insert${moduleName}Schema;
+export type Update${moduleName} = typeof Update${moduleName}Schema;
 `;
   fs.writeFileSync(
     path.join(modulePath, `${moduleName}Model.ts`),

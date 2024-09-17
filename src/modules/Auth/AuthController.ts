@@ -33,8 +33,8 @@ export default class AuthController extends BaseController {
   @Post("/refresh-token")
   @Use(validateBody(RefreshTokenSchema))
   async refreshToken(c: Context) {
-    const { refreshToken } = await c.req.json();
-    const result = await this.authService.refreshToken(refreshToken);
+    const { refreshToken, clientId } = await c.req.json();
+    const result = await this.authService.refreshToken(refreshToken, clientId);
     return c.json(result);
   }
 

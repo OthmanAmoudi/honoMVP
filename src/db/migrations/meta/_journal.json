@@ -8,6 +8,20 @@
       "when": 1726512853745,
       "tag": "0000_yielding_captain_america",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1726575195849,
+      "tag": "0001_motionless_madame_hydra",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1726578254240,
+      "tag": "0002_panoramic_photon",
+      "breakpoints": true
     }
   ]
 }

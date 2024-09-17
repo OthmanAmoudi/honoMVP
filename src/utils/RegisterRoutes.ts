@@ -118,7 +118,6 @@ class RouteHandler {
         ? this.getStandardRoutes(controllerInstance)
         : []),
     ];
-
     for (const route of allRoutes) {
       const {
         method,
@@ -141,7 +140,6 @@ class RouteHandler {
         const routeHandler = async (c: Context) => {
           return await handler.call(controllerInstance, c);
         };
-
         if (routeMiddlewares.length > 0) {
           (routeRouter as any)[method.toLowerCase()](
             routePath,
