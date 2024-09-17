@@ -1,79 +1,55 @@
 // src/services/BaseService.ts
-import { MySql2Database } from "drizzle-orm/mysql2";
-import { db } from "../db/singletonDBInstance";
-import {
-  ValidationError,
-  NotFoundError,
-  DatabaseError,
-  ServiceMethod,
-} from "./";
-import { Static, TSchema } from "@sinclair/typebox";
-import { TypeCompiler } from "@sinclair/typebox/compiler";
+import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import { ValidationError } from "../utils/errors";
+import { BaseSchema, ValiError, parse } from "valibot";
 
 export abstract class BaseService {
-  protected db!: MySql2Database; // Use ! to tell TypeScript that it's initialized later
-  constructor() {
-    // Using async IIFE to initialize the db
-    (async () => {
-      this.db = await db(); // Await the resolved database instance
-    })();
-  }
-  protected async handleErrors<U>(method: ServiceMethod<U>): Promise<U> {
+  constructor(public readonly db: BetterSQLite3Database) {}
+
+  protected validate<T>(schema: BaseSchema<unknown, T, any>, data: unknown): T {
     try {
-      // Make sure db is initialized before accessing it
-      if (!this.db) {
-        throw new Error("Database is not initialized");
-      }
-      return await method();
+      return parse(schema, data);
     } catch (error) {
-      if (error instanceof ValidationError) {
-        throw new ValidationError("Validation failed", error);
+      if (error instanceof ValiError) {
+        const validationErrors = error.issues.map((issue) => ({
+          path: issue.path?.map((p: { key: string }) => p.key).join("."),
+          message: issue.message,
+        }));
+        throw new ValidationError("Validation failed", validationErrors);
       }
-      if (error instanceof NotFoundError) {
-        throw error;
-      }
-      console.error("Unexpected error:", error);
-      throw new DatabaseError("An unexpected database error occurred");
-    }
-  }
-  protected validate<T extends TSchema>(schema: T, obj: unknown): Static<T> {
-    // Create a new object with only the properties defined in the schema
-    const cleanedObj: Partial<Static<T>> = {};
-    for (const key in schema.properties) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        // @ts-ignore
-        cleanedObj[key as keyof Static<T>] = obj[key as keyof typeof obj];
-      }
-    }
-
-    const C = TypeCompiler.Compile(schema);
-    if (C.Check(cleanedObj)) {
-      return cleanedObj as Static<T>;
-    } else {
-      const errors: string[] = [];
-      // Collect and format errors into a more readable structure
-      for (const error of C.Errors(cleanedObj)) {
-        const { path, message, value } = error;
-        errors.push(
-          `Validation Error` +
-            ` At: ${
-              Array.isArray(path) ? path.join(".") : path || "(root)"
-            }\n` +
-            ` Issue: ${message}` +
-            ` got: (${value})`
-        );
-      }
-
-      // Optional: Logging the errors for debugging purposes
-      console.log("Validation Errors:\n", errors.join("\n\n"));
-
-      throw new ValidationError("Validation failed", errors);
+      throw error;
     }
   }
 
-  abstract getAll(cursor?: number | string, limit?: number): Promise<any[]>;
-  abstract getById(id: number | string): Promise<any>;
-  abstract create(data: any): Promise<any>;
-  abstract update(id: number | string, data: any): Promise<any>;
-  abstract delete(id: number | string): Promise<void>;
+  /**
+   * Retrieves a list of models.
+   * @param cursor Optional cursor for pagination.
+   * @param limit Optional limit of items to retrieve.
+   */
+  getAll?(cursor?: number | string, limit?: number): Promise<any[]>;
+
+  /**
+   * Retrieves a model by its ID.
+   * @param id The ID of the model to retrieve.
+   */
+  getById?(id: number | string): Promise<any>;
+
+  /**
+   * Creates a new model instance.
+   * @param data The data to create the model with.
+   */
+  create?(data: any): Promise<any>;
+
+  /**
+   * Updates an existing model.
+   * @param id The ID of the model to update.
+   * @param data The data to update the model with.
+   */
+  update?(id: number | string, data: any): Promise<any>;
+
+  /**
+   * Deletes a model by its ID.
+   * @param id The ID of the model to delete.
+   */
+  delete?(id: number | string): Promise<void>;
 }

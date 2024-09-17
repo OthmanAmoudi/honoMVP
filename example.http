@@ -1,0 +1,71 @@
+GET http://localhost:3000/api/todos HTTP/1.1
+content-type: application/json
+###
+POST http://localhost:3000/api/todos HTTP/1.1
+content-type: application/json
+
+{
+    "content": "test",
+    "completed": 1
+}
+###
+GET http://localhost:3000/api/todos/Dax2n5PRUw_gvbBWtNses HTTP/1.1
+content-type: application/json
+###
+PUT http://localhost:3000/api/todos/Dax2n5PRUw_gvbBWtNses HTTP/1.1
+content-type: application/json
+
+{
+    "content": "44343434343434",
+    "completed": 1
+}
+###
+DELETE http://localhost:3000/api/todos/Dax2n5PRUw_gvbBWtNses HTTP/1.1
+content-type: application/json
+###
+GET http://localhost:3000/api/notes/xxx HTTP/1.1
+content-type: application/json
+###
+GET http://localhost:3000/api/notes/bbb HTTP/1.1
+content-type: application/json
+###
+GET http://localhost:3000/api/notes HTTP/1.1
+content-type: application/json
+###
+POST http://localhost:3000/api/notes HTTP/1.1
+content-type: application/json
+
+{
+    "userId":"45lws04",
+    "description": "test 22 2 2 2 2"
+}
+###
+GET http://localhost:3000/api/notes/AdKuVz2jpFdG3W4QuWkz4 HTTP/1.1
+content-type: application/json
+###
+PUT http://localhost:3000/api/notes/2024-05-01T00:00:00.000Z HTTP/1.1
+content-type: application/json
+
+{
+    "description": "test 44 44 444 4 ",
+    "SDFSDFSDF":"sdfsdFSDF",
+    "id":"xcvxcvxcv"
+}
+###
+DELETE http://localhost:3000/api/notes/leGy7YvweEWAvJInkolTm HTTP/1.1
+content-type: application/json
+###
+GET http://localhost:3000/api/notes/ooo HTTP/1.1
+content-type: application/json
+###
+GET http://localhost:3000/api/notes/ooo/33 HTTP/1.1
+content-type: application/json
+###
+GET http://localhost:3000/api/notes/ooo/vvv HTTP/1.1
+content-type: application/json
+###
+GET http://localhost:3000/api/notes/ooo/general HTTP/1.1
+content-type: application/json
+###
+GET http://localhost:3000/api/notes/ooo/general2 HTTP/1.1
+content-type: application/json

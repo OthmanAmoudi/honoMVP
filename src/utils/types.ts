@@ -8,10 +8,10 @@ export type MiddlewareFunction = (
 
 export interface RouteConfig {
   path: string;
-  controller: new (service: any) => any;
+  controller: any;
   middlewares?: ((c: any, next: any) => any) | ((c: any, next: any) => any)[];
   standardRoutes?: boolean;
-  prefix?: string;
+  // prefix?: string;
   nestedRoutes?: RouteConfig[];
 }
 export type CustomRoute = {
@@ -22,3 +22,31 @@ export type CustomRoute = {
 };
 
 export type ServiceMethod<T> = (...args: any[]) => Promise<T>;
+
+export interface RouteInfo {
+  path: string;
+  controller: string;
+  services: string[];
+  middlewares: string[];
+  methods: string[];
+  handler: string;
+}
+export interface Controller {
+  service?: any;
+  getExtraRoutes?(): ExtraRoute[];
+  // Define other standard methods if necessary
+  getAll?(c: Context): Promise<any>;
+  create?(c: Context): Promise<any>;
+  getById?(c: Context): Promise<any>;
+  update?(c: Context): Promise<any>;
+  delete?(c: Context): Promise<any>;
+}
+
+export interface ExtraRoute {
+  method: string;
+  path: string;
+  handler: (c: Context) => Promise<any>;
+  handlerName: string;
+  middlewares?: MiddlewareHandler[];
+  serviceNames?: string[];
+}

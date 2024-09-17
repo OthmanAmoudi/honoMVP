@@ -1,30 +1,20 @@
 import "reflect-metadata";
-
-export function Route(method: string, path: string) {
-  return function (
-    target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-  ) {
-    if (!target.extraRoutes) {
-      target.extraRoutes = [];
-    }
-    target.extraRoutes.push({
-      method: method.toLowerCase(),
-      path,
-      handler: descriptor.value,
-      name: propertyKey,
-    });
-  };
-}
+import { Context } from "hono";
 
 // Convenience decorators for common HTTP methods
-export function Get(path: string) {
+export function Get(path: string = "") {
   return function (
     target: any,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
+    const originalMethod = descriptor.value;
+    if (path === "/" || path === "//") path = "";
+
+    // descriptor.value = async function (c: Context, ...args: any[]) {
+    //   return errorHandler(() => originalMethod.apply(this, [c, ...args]), c);
+    // };
+
     Reflect.defineMetadata(
       "method",
       "get",
@@ -39,13 +29,19 @@ export function Get(path: string) {
     );
   };
 }
-
-export function Post(path: string) {
+export function Post(path: string = "") {
   return function (
     target: any,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
+    const originalMethod = descriptor.value;
+    if (path === "/" || path === "//") path = "";
+
+    // descriptor.value = async function (c: Context, ...args: any[]) {
+    //   return errorHandler(() => originalMethod.apply(this, [c, ...args]), c);
+    // };
+
     Reflect.defineMetadata(
       "method",
       "post",
@@ -60,13 +56,19 @@ export function Post(path: string) {
     );
   };
 }
-
-export function Put(path: string) {
+export function Put(path: string = "") {
   return function (
     target: any,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
+    const originalMethod = descriptor.value;
+    if (path === "/" || path === "//") path = "";
+
+    // descriptor.value = async function (c: Context, ...args: any[]) {
+    //   return errorHandler(() => originalMethod.apply(this, [c, ...args]), c);
+    // };
+
     Reflect.defineMetadata(
       "method",
       "put",
@@ -81,34 +83,19 @@ export function Put(path: string) {
     );
   };
 }
-
-export function Delete(path: string) {
+export function Patch(path: string = "") {
   return function (
     target: any,
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
-    Reflect.defineMetadata(
-      "method",
-      "delete",
-      target.constructor.prototype,
-      propertyKey
-    );
-    Reflect.defineMetadata(
-      "path",
-      path,
-      target.constructor.prototype,
-      propertyKey
-    );
-  };
-}
+    const originalMethod = descriptor.value;
+    if (path === "/" || path === "//") path = "";
 
-export function Patch(path: string) {
-  return function (
-    target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-  ) {
+    // descriptor.value = async function (c: Context, ...args: any[]) {
+    //   return errorHandler(() => originalMethod.apply(this, [c, ...args]), c);
+    // };
+
     Reflect.defineMetadata(
       "method",
       "patch",
@@ -123,9 +110,34 @@ export function Patch(path: string) {
     );
   };
 }
-// Add other HTTP method decorators (Put, Delete, etc.) as needed
+export function Delete(path: string = "") {
+  return function (
+    target: any,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const originalMethod = descriptor.value;
+    if (path === "/" || path === "//") path = "";
 
-export function Use(middleware: any) {
+    // descriptor.value = async function (c: Context, ...args: any[]) {
+    //   return errorHandler(() => originalMethod.apply(this, [c, ...args]), c);
+    // };
+
+    Reflect.defineMetadata(
+      "method",
+      "delete",
+      target.constructor.prototype,
+      propertyKey
+    );
+    Reflect.defineMetadata(
+      "path",
+      path,
+      target.constructor.prototype,
+      propertyKey
+    );
+  };
+}
+export function Use(middleware: Function | Function[]) {
   return function (
     target: any,
     propertyKey: string,
@@ -139,7 +151,10 @@ export function Use(middleware: any) {
       ) || [];
     Reflect.defineMetadata(
       "middlewares",
-      [...existingMiddlewares, middleware],
+      [
+        ...existingMiddlewares,
+        ...(Array.isArray(middleware) ? middleware : [middleware]),
+      ],
       target.constructor.prototype,
       propertyKey
     );

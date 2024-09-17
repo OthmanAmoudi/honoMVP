@@ -1,28 +1,38 @@
 // src/routes.ts
-import { logger } from "hono/logger";
 import { RouteConfig } from "./utils";
 import NoteController from "./modules/Note/NoteController";
 import TodoController from "./modules/Todo/TodoController";
+import GeneralController from "./modules/General/GeneralController";
+import UserController from "./modules/User/UserController";
+import AuthController from "./modules/Auth/AuthController";
 
 const routeConfig: RouteConfig[] = [
   {
-    prefix: "/api",
-    path: "/todos",
-    controller: TodoController, // this controller by default has all the standard routes (getAll,getById,create,update,delete)
+    path: "todos",
+    controller: TodoController,
+    // standardRoutes:true // by default is true
+  },
+  {
+    path: "notes",
+    controller: NoteController,
+    standardRoutes: true,
     nestedRoutes: [
       {
-        path: "/ooo",
-        controller: NoteController,
-        standardRoutes: true, // if false (getAll,getById,create,update,delete) will not be included
-        middlewares: logger(), // apply middleware for all routes
+        path: "ooo",
+        controller: GeneralController,
+        // standardRoutes: false,
       },
     ],
   },
   {
-    path: "/notes",
-    controller: NoteController,
-    standardRoutes: true, // if false (getAll,getById,create,update,delete) will not be included
-    middlewares: logger(), // apply middleware for all routes
+    path: "users",
+    controller: UserController,
+    // standardRoutes: false,
+  },
+  {
+    path: "auth",
+    controller: AuthController,
+    standardRoutes: false,
   },
 ];
 export default routeConfig;
