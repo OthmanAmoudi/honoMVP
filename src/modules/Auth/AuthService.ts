@@ -1,6 +1,6 @@
 // src/modules/Auth/AuthService.ts
 import { NotFoundError, BaseService, UnauthorizedError } from "../../utils";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { userTable, NewUser } from "../User/UserModel";
 import { authTable, NewAuth, AuthSchema, Auth } from "./AuthModel";
 import bcrypt from "bcrypt";
@@ -26,42 +26,82 @@ export default class AuthService extends BaseService {
   async register(userData: NewAuth & { password: string }) {
     const { password, ...userInfo } = userData;
 
-    const newUser = await this.db
+    // Convert date fields to Date objects
+    const processedUserInfo = Object.entries(userInfo).reduce(
+      (acc, [key, value]) => {
+        if (value instanceof Date) {
+          acc[key] = value;
+        } else if (
+          typeof value === "string" &&
+          /^\d{4}-\d{2}-\d{2}/.test(value)
+        ) {
+          acc[key] = new Date(value);
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, any>
+    );
+
+    // Insert user into the userTable
+    const returnedId = await this.db
       .insert(userTable)
-      .values(userInfo)
-      .returning();
+      .values(processedUserInfo)
+      .$returningId();
+
+    // Retrieve the last inserted ID for MySQL
+    const [newUser] = await this.db
+      .select()
+      .from(userTable)
+      .where(eq(userTable.id, returnedId[0].id));
+
+    console.log({ newUser });
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
     const authData: Auth = {
-      userId: newUser[0].id,
+      userId: newUser.id,
       password: hashedPassword,
     };
 
-    await this.db.insert(authTable).values(authData);
+    const [authId] = await this.db
+      .insert(authTable)
+      .values(authData)
+      .$returningId();
 
-    const accessToken = this.generateAccessToken(newUser[0].id);
-    const refreshToken = this.generateRefreshToken(newUser[0].id, "xAx");
+    const accessToken = this.generateAccessToken(newUser.id);
+    const refreshToken = this.generateRefreshToken(newUser.id, "xAx");
+
+    console.log({ accessToken, refreshToken });
 
     await this.db
       .update(authTable)
       .set({ refreshToken })
-      .where(eq(authTable.userId, newUser[0].id));
+      .where(eq(authTable.userId, authId.id));
 
-    return { user: newUser[0], accessToken, refreshToken };
+    console.log({ user: newUser, accessToken, refreshToken });
+
+    return { user: newUser, accessToken, refreshToken };
   }
 
   async login(email: string, password: string, clientId?: string) {
     if (!clientId) {
       clientId = "" + Math.random();
     }
-    //TODO: Move password to auth table
+
     const user = await this.getUserByEmail(email);
+    if (!user) {
+      throw new UnauthorizedError("Invalid credentials");
+    }
+
     const auth = await this.db
       .select()
       .from(authTable)
       .where(eq(authTable.userId, user.id))
       .limit(1);
-    if (!user || !(await bcrypt.compare(password, auth[0].password))) {
+
+    if (!(await bcrypt.compare(password, auth[0].password))) {
       throw new UnauthorizedError("Invalid credentials");
     }
 
@@ -85,7 +125,7 @@ export default class AuthService extends BaseService {
 
   async refreshToken(oldRefreshToken: string, clientId?: string) {
     if (!clientId) {
-      clientId = "" + "Math.random()";
+      clientId = "" + Math.random();
     }
     try {
       const decoded = jwt.verify(oldRefreshToken, this.JWT_REFRESH_SECRET) as {
@@ -131,7 +171,6 @@ export default class AuthService extends BaseService {
 
       return { accessToken, refreshToken };
     } catch (error) {
-      // If token is invalid, revoke the entire refresh token family
       if (error instanceof jwt.JsonWebTokenError) {
         await this.revokeRefreshTokenFamily(oldRefreshToken);
       }

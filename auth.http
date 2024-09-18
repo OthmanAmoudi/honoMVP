@@ -2,10 +2,9 @@ POST http://localhost:3000/api/auth/register HTTP/1.1
 content-type: application/json
 
 {
-    "email": "test10@hotmail.com",
+    "email": "test19@hotmail.com",
     "password": "ssssssds",
-    "name": "test",
-    "SDFSDFSDF":"SDFSDFSDFS"
+    "name": "test"
 }
 ###
 POST http://localhost:3000/api/auth/login HTTP/1.1

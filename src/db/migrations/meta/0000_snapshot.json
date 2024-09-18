@@ -1,7 +1,7 @@
 {
-  "version": "6",
-  "dialect": "sqlite",
-  "id": "f1f6d0be-13e0-4ffb-856e-c944adc785fd",
+  "version": "5",
+  "dialect": "mysql",
+  "id": "6c7f2f81-87ca-4646-a35f-963aafcd10b0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "auth": {
@@ -9,56 +9,56 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
-          "primaryKey": true,
+          "type": "varchar(255)",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "password": {
           "name": "password",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "refresh_token": {
           "name": "refresh_token",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "refresh_token_expires_at": {
           "name": "refresh_token_expires_at",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "refresh_token_family": {
           "name": "refresh_token_family",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "last_authentication": {
           "name": "last_authentication",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "createdAt": {
           "name": "createdAt",
-          "type": "integer",
+          "type": "datetime",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -66,7 +66,7 @@
         },
         "updatedAt": {
           "name": "updatedAt",
-          "type": "integer",
+          "type": "datetime",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -89,7 +89,14 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "auth_id": {
+          "name": "auth_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {}
     },
     "notes": {
@@ -97,28 +104,28 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
-          "primaryKey": true,
+          "type": "varchar(255)",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "description": {
           "name": "description",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "createdAt": {
           "name": "createdAt",
-          "type": "integer",
+          "type": "datetime",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -126,7 +133,7 @@
         },
         "updatedAt": {
           "name": "updatedAt",
-          "type": "integer",
+          "type": "datetime",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -149,7 +156,14 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "notes_id": {
+          "name": "notes_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {}
     },
     "todos": {
@@ -157,21 +171,21 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
-          "primaryKey": true,
+          "type": "varchar(255)",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "content": {
           "name": "content",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "completed": {
           "name": "completed",
-          "type": "integer",
+          "type": "int",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -179,7 +193,7 @@
         },
         "createdAt": {
           "name": "createdAt",
-          "type": "integer",
+          "type": "datetime",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -187,7 +201,7 @@
         },
         "updatedAt": {
           "name": "updatedAt",
-          "type": "integer",
+          "type": "datetime",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -196,7 +210,14 @@
       },
       "indexes": {},
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "todos_id": {
+          "name": "todos_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {}
     },
     "users": {
@@ -204,35 +225,35 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
-          "primaryKey": true,
+          "type": "varchar(255)",
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "email": {
           "name": "email",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "name": {
           "name": "name",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "bio": {
           "name": "bio",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "createdAt": {
           "name": "createdAt",
-          "type": "integer",
+          "type": "datetime",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -240,34 +261,40 @@
         },
         "updatedAt": {
           "name": "updatedAt",
-          "type": "integer",
+          "type": "datetime",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "users_id": {
+          "name": "users_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
         "users_email_unique": {
           "name": "users_email_unique",
           "columns": [
             "email"
-          ],
-          "isUnique": true
+          ]
         }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      }
     }
   },
-  "enums": {},
   "_meta": {
     "schemas": {},
     "tables": {},
     "columns": {}
   },
   "internal": {
+    "tables": {},
     "indexes": {}
   }
 }

@@ -1,18 +1,18 @@
 // src/modules/User/UserModel.ts
-import { text, sqliteTable } from "drizzle-orm/sqlite-core";
+import { text, mysqlTable, varchar } from "drizzle-orm/mysql-core";
 import {
   nanoidIdColumn,
   createdAtColumn,
   updatedAtColumn,
-} from "../../db/fields/customefields-sqlite";
+} from "../../db/fields/customefields-mysql";
 import { createSelectSchema } from "drizzle-valibot";
 import * as v from "valibot";
 
-export const userTable = sqliteTable("users", {
+export const userTable = mysqlTable("users", {
   id: nanoidIdColumn(),
-  email: text("email").notNull().unique(),
-  name: text("name"),
-  bio: text("bio"),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  name: varchar("name", { length: 255 }),
+  bio: varchar("bio", { length: 255 }),
   createdAt: createdAtColumn(),
   updatedAt: updatedAtColumn(),
 });

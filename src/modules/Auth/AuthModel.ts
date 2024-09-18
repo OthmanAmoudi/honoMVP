@@ -1,24 +1,24 @@
 // src/modules/Auth/AuthModel.ts
-import { text, sqliteTable } from "drizzle-orm/sqlite-core";
+import { mysqlTable, varchar } from "drizzle-orm/mysql-core";
 import {
   nanoidIdColumn,
   createdAtColumn,
   updatedAtColumn,
-} from "../../db/fields/customefields-sqlite";
+} from "../../db/fields/customefields-mysql";
 import { createSelectSchema } from "drizzle-valibot";
 import { userTable } from "../User/UserModel";
 import * as v from "valibot";
 
-export const authTable = sqliteTable("auth", {
+export const authTable = mysqlTable("auth", {
   id: nanoidIdColumn(),
-  userId: text("user_id")
+  userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => userTable.id),
-  password: text("password").notNull(),
-  refreshToken: text("refresh_token"),
-  refreshTokenExpiresAt: text("refresh_token_expires_at"),
-  refreshTokenFamily: text("refresh_token_family"),
-  lastAuthentication: text("last_authentication"),
+  password: varchar("password", { length: 255 }).notNull(),
+  refreshToken: varchar("refresh_token", { length: 255 }),
+  refreshTokenExpiresAt: varchar("refresh_token_expires_at", { length: 255 }),
+  refreshTokenFamily: varchar("refresh_token_family", { length: 255 }),
+  lastAuthentication: varchar("last_authentication", { length: 255 }),
   createdAt: createdAtColumn(),
   updatedAt: updatedAtColumn(),
 });

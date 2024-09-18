@@ -1,10 +1,10 @@
 // src/services/BaseService.ts
-import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import { MySql2Database } from "drizzle-orm/mysql2";
 import { ValidationError } from "../utils/errors";
 import { BaseSchema, ValiError, parse } from "valibot";
 
 export abstract class BaseService {
-  constructor(public readonly db: BetterSQLite3Database) {}
+  constructor(public readonly db: MySql2Database) {}
 
   protected validate<T>(schema: BaseSchema<unknown, T, any>, data: unknown): T {
     try {

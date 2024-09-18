@@ -5,12 +5,12 @@ import { RouteConfig, RouteInfo, Controller, ExtraRoute } from "./types";
 import { printBootInfo } from "./BootLogger";
 import { db } from "../db/singletonDBInstance";
 import { withErrorHandler } from "./errors";
-import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import { MySql2Database } from "drizzle-orm/mysql2";
 
 // Add this interface
 interface ControllerConstructor {
   new (...args: any[]): Controller;
-  services?: (new (db: BetterSQLite3Database) => any)[];
+  services?: (new (db: MySql2Database) => any)[];
 }
 
 class ServiceResolver {
@@ -18,7 +18,7 @@ class ServiceResolver {
     ControllerClass: ControllerConstructor
   ): Promise<any[]> {
     const serviceClasses = ControllerClass.services || [];
-    const dbInstance = db;
+    const dbInstance = await db();
     return serviceClasses.map((ServiceClass) => new ServiceClass(dbInstance));
   }
 }

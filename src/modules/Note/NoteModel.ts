@@ -2,18 +2,17 @@ import {
   nanoidIdColumn,
   createdAtColumn,
   updatedAtColumn,
-} from "../../db/fields/customefields-sqlite";
+} from "../../db/fields/customefields-mysql";
 import { createSelectSchema } from "drizzle-valibot";
-import { text } from "drizzle-orm/sqlite-core";
+import { mysqlTable, varchar } from "drizzle-orm/mysql-core";
 import { userTable } from "../User/UserModel";
 import * as v from "valibot";
-import { sqliteTable } from "drizzle-orm/sqlite-core";
 
 // Example table that extends with common fields
-export const notesTable = sqliteTable("notes", {
+export const notesTable = mysqlTable("notes", {
   id: nanoidIdColumn(),
-  description: text("description").notNull(),
-  userId: text("user_id")
+  description: varchar("description", { length: 255 }).notNull(),
+  userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => userTable.id),
   createdAt: createdAtColumn(),

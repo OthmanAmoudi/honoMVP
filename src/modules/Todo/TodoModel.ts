@@ -3,14 +3,14 @@ import {
   createdAtColumn,
   nanoidIdColumn,
   updatedAtColumn,
-} from "../../db/fields/customefields-sqlite";
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+} from "../../db/fields/customefields-mysql";
+import { mysqlTable, text, int, varchar } from "drizzle-orm/mysql-core";
 import * as v from "valibot";
 
-export const todosTable = sqliteTable("todos", {
+export const todosTable = mysqlTable("todos", {
   id: nanoidIdColumn(),
-  content: text("content").notNull(),
-  completed: integer("completed").notNull().default(0),
+  content: varchar("content", { length: 255 }).notNull(),
+  completed: int("completed").notNull().default(0),
   createdAt: createdAtColumn(),
   updatedAt: updatedAtColumn(),
 });

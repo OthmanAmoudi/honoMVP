@@ -1,11 +1,11 @@
 // customFieldsMysql.ts
-import { text, datetime } from "drizzle-orm/mysql-core";
+import { varchar, datetime } from "drizzle-orm/mysql-core";
 import { nanoid } from "nanoid";
 import { sql } from "drizzle-orm";
 
 // Custom ID column with nanoid for MySQL
 export const nanoidIdColumn = () =>
-  text("id")
+  varchar("id", { length: 255 })
     .primaryKey()
     .notNull()
     .$defaultFn(() => nanoid());
