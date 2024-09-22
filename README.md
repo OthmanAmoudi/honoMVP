@@ -97,12 +97,12 @@ async login(c: Context) {
 }
 }
 ```
-To use the controller main service be sure to add the UserService to the services array, as public service in the constructor and in the super method of the constructor. you can add more services in the constructor but only subsequent services must be added in the services array and as public varialbe in the constructor (not in the super method) like the following:
+To use the controller main service be sure to add the UserService to the services array, as public property in the constructor and in the super method of the constructor. you can add more services in the in the controller but only subsequent services must be added in the services array and as public property in the constructor (not in the super method) like the following:
 ```js
 export default class UserController extends BaseController {
-  static services = [UserService,NoteService];
-  constructor(public userService: UserService, public noteService:NoteService) {
-    super(userService);
+  static services = [UserService,NoteService]; // subsequent service here
+  constructor(public userService: UserService, public noteService:NoteService) { // and here
+    super(userService); // this is only for the main service of the controller
   }
 @Post("/login")
 @Use(validateBody(LoginSchema)) // multiple middlewares are also possible just supply an array like so @Use([validateBody(LoginSchema), logger()])
