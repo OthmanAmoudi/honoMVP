@@ -85,10 +85,30 @@ The standardRoutes option automatically generates CRUD routes for a controller i
 ### Controllers
 Controllers handle the request/response cycle. They use decorators to define routes and apply middlewares:
 ```js
+export default class UserController extends BaseController {
+  static services = [UserService];
+  constructor(public userService: UserService) {
+    super(userService);
+  }
 @Post("/login")
 @Use(validateBody(LoginSchema)) // multiple middlewares are also possible just supply an array like so @Use([validateBody(LoginSchema), logger()])
 async login(c: Context) {
   // ...
+}
+}
+```
+To use the controller main service be sure to add the UserService to the services array, as public service in the constructor and in the super method of the constructor. you can add more services in the constructor but only subsequent services must be added in the services array and as public varialbe in the constructor (not in the super method) like the following:
+```js
+export default class UserController extends BaseController {
+  static services = [UserService,NoteService];
+  constructor(public userService: UserService, public noteService:NoteService) {
+    super(userService);
+  }
+@Post("/login")
+@Use(validateBody(LoginSchema)) // multiple middlewares are also possible just supply an array like so @Use([validateBody(LoginSchema), logger()])
+async login(c: Context) {
+  // ...
+}
 }
 ```
 ### Models
