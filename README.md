@@ -44,10 +44,13 @@ The project follows a modular structure:
 └── index.ts
 ```
 
-you must follow folder structure for service resolving mechanism, also modules components (controllers, models, services) should be postfixed after the module name like so (for example if you have todo it should be in folder modules/Todo with components like so TodoController.ts TodoModel.ts TodoService.ts) or you can quickly generate it with incldued script
- ```bash node ./genmodule.js Todo`
-Each module must have a Controller but Model and Service is optional.
-
+you must follow folder structure for service resolving mechanism, also modules components (controllers, models, services) should be postfixed after the module name (for example if you have todo it should be in folder modules/Todo with components like TodoController.ts TodoModel.ts TodoService.ts) or you can quickly generate it with incldued script
+  ```bash 
+  node ./genmodule.js Todo
+```
+Each module must have a Controller which where you define routes and handlers but Model and Service is optional.
+Model is where you define your database tables and data transfer objects lastly services which is where business logic should be handled.
+in order to get your controller registered you should define it in the routes global object with main route path. by default this step will resolve the service automatically and will gather all your routes under the route path and will make CRUD routes automatically 
 ### Routing
 Routes are defined in src/routes.ts using the RouteConfig interface:
 ```js
@@ -59,7 +62,7 @@ const routeConfig: RouteConfig[] = [
   {
     path: "notes",
     controller: NoteController,
-    standardRoutes: true,
+    standardRoutes: true, // by default true
     nestedRoutes: [
       {
         path: "ooo",
